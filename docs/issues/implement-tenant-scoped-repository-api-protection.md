@@ -1,6 +1,7 @@
-# Implement tenant-scoped repository and API protection pattern
+Status: READY_FOR_AI
+Priority: P0
 
-**Status:** Ready for AI
+# Implement tenant-scoped repository and API protection pattern
 
 ## Objective
 

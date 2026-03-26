@@ -1,6 +1,7 @@
-# Create real database-backed repository implementations for cases, documents, and audit events
+Status: READY_FOR_AI
+Priority: P0
 
-**Status:** Ready for AI
+# Create real database-backed repository implementations for cases, documents, and audit events
 
 ## Objective
 
@@ -32,4 +33,4 @@ Replace repository stubs with real database-backed implementations for cases, do
 
 Role assignment plus audit persistence should become transactional once the real DB adapter supports transactions.
 
-Implementations assume `public.cases` and `public.documents` exist; add migrations in a follow-up if those tables are not yet in the database.
+`public.cases` and `public.documents` are created by `database/migrations/20260327_003_cases_documents.sql` (run after prior migrations).

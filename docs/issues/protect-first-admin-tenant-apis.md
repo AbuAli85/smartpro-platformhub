@@ -1,6 +1,7 @@
-# Protect first admin and tenant APIs with auth, permission, and tenant-scope guards
+Status: READY_FOR_AI
+Priority: P0
 
-**Status:** Ready for AI
+# Protect first admin and tenant APIs with auth, permission, and tenant-scope guards
 
 ## Objective
 

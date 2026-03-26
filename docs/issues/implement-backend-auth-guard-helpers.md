@@ -1,6 +1,7 @@
-# Implement backend auth and permission guard helpers
+Status: READY_FOR_AI
+Priority: P0
 
-**Status:** Ready for AI
+# Implement backend auth and permission guard helpers
 
 ## Objective
 

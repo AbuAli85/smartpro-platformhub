@@ -1,6 +1,7 @@
-# Design and implement audit event persistence
+Status: READY_FOR_AI
+Priority: P0
 
-**Status:** Ready for AI
+# Design and implement audit event persistence
 
 ## Objective
 

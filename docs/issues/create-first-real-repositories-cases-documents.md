@@ -1,6 +1,7 @@
-# Create first real repositories and protected endpoints for cases and documents
+Status: READY_FOR_AI
+Priority: P0
 
-**Status:** Ready for AI
+# Create first real repositories and protected endpoints for cases and documents
 
 ## Objective
 

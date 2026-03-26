@@ -1,0 +1,8 @@
+{
+  "name": "smartpro-platformhub",
+  "private": true,
+  "description": "SmartPRO platform — scripts and packages",
+  "scripts": {
+    "publish-issues": "npx --yes tsx scripts/publish-issues.ts"
+  }
+}
