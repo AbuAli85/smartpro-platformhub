@@ -3,6 +3,7 @@ begin;
 create table if not exists public.schema_migrations (
   id uuid primary key default gen_random_uuid(),
   filename text not null unique,
+  checksum text not null,
   applied_at timestamptz not null default now()
 );
 

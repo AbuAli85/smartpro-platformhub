@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import type { PoolClient } from "pg";
@@ -12,6 +13,7 @@ type MigrationFailureType =
   | "LOCK_UNAVAILABLE"
   | "SQL_EXECUTION_FAILED"
   | "STATE_RECORD_FAILED"
+  | "CHECKSUM_MISMATCH"
   | "UNKNOWN";
 
 interface MigrationRunSummary {
@@ -20,6 +22,10 @@ interface MigrationRunSummary {
   skippedCount: number;
   failedFile?: string;
   failureType?: MigrationFailureType;
+}
+
+function calculateChecksum(content: string): string {
+  return crypto.createHash("sha256").update(content, "utf8").digest("hex");
 }
 
 function sleep(ms: number): Promise<void> {
@@ -112,7 +118,7 @@ async function acquireMigrationLock(
   throw error;
 }
 
-async function ensureMigrationStateTable() {
+async function ensureMigrationStateTable(): Promise<void> {
   const config = getPostgresConfigFromEnv();
   const pool = createPostgresPool(config);
 
@@ -121,6 +127,7 @@ async function ensureMigrationStateTable() {
       create table if not exists public.schema_migrations (
         id uuid primary key default gen_random_uuid(),
         filename text not null unique,
+        checksum text,
         applied_at timestamptz not null default now()
       );
     `);
@@ -152,9 +159,16 @@ async function main() {
     await acquireMigrationLock(client, MIGRATION_LOCK_KEY);
 
     for (const file of files) {
-      const alreadyApplied = await client.query(
+      const fullPath = path.join(migrationsDir, file);
+      const sql = fs.readFileSync(fullPath, "utf-8");
+      const checksum = calculateChecksum(sql);
+
+      const existing = await client.query<{
+        filename: string;
+        checksum: string | null;
+      }>(
         `
-        select 1
+        select filename, checksum
         from public.schema_migrations
         where filename = $1
         limit 1
@@ -162,14 +176,41 @@ async function main() {
         [file],
       );
 
-      if (alreadyApplied.rows[0]) {
+      if (existing.rows[0]) {
+        const storedChecksum = existing.rows[0].checksum;
+
+        if (storedChecksum === null || storedChecksum === "") {
+          await client.query(
+            `
+            update public.schema_migrations
+            set checksum = $1
+            where filename = $2
+            `,
+            [checksum, file],
+          );
+          console.log(
+            `Backfilled checksum for previously applied migration: ${file}`,
+          );
+          summary.skippedCount += 1;
+          continue;
+        }
+
+        if (storedChecksum !== checksum) {
+          const error = new Error(
+            `Checksum mismatch for applied migration: ${file}. The migration file was changed after it was applied; historical migrations must be immutable.`,
+          );
+          (
+            error as Error & { migrationFailureType?: MigrationFailureType }
+          ).migrationFailureType = "CHECKSUM_MISMATCH";
+          summary.failedFile = file;
+          summary.failureType = "CHECKSUM_MISMATCH";
+          throw error;
+        }
+
         console.log(`Skipping already applied migration: ${file}`);
-        summary.skippedCount++;
+        summary.skippedCount += 1;
         continue;
       }
-
-      const fullPath = path.join(migrationsDir, file);
-      const sql = fs.readFileSync(fullPath, "utf-8");
 
       console.log(`Applying migration: ${file}`);
 
@@ -187,10 +228,10 @@ async function main() {
       try {
         await client.query(
           `
-          insert into public.schema_migrations (filename)
-          values ($1)
+          insert into public.schema_migrations (filename, checksum)
+          values ($1, $2)
           `,
-          [file],
+          [file, checksum],
         );
       } catch (error) {
         (
@@ -201,7 +242,7 @@ async function main() {
         throw error;
       }
 
-      summary.appliedCount++;
+      summary.appliedCount += 1;
     }
 
     console.log("All pending migrations applied successfully.");
@@ -211,6 +252,17 @@ async function main() {
       summary.failureType = classifyMigrationError(error);
     }
     printMigrationSummary(summary);
+    if (
+      summary.failureType === "CHECKSUM_MISMATCH" &&
+      summary.failedFile
+    ) {
+      console.error(
+        "\nIntegrity failure: an applied migration file no longer matches the recorded checksum.",
+      );
+      console.error(
+        `File: ${summary.failedFile} — failure type: CHECKSUM_MISMATCH`,
+      );
+    }
     throw error;
   } finally {
     try {
