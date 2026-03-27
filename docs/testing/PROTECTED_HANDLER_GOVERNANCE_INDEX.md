@@ -43,6 +43,12 @@ Provides a single navigation point for SmartPRO’s protected-handler governance
 - `docs/testing/GOVERNANCE_DOC_INTEGRITY_PATTERN.md`
 - `docs/testing/REGISTRY_TO_TEST_COVERAGE_PATTERN.md`
 
+## Governance evolution
+- `docs/testing/PROTECTED_HANDLER_GOVERNANCE_CHANGELOG.md`
+- `docs/testing/PROTECTED_HANDLER_GOVERNANCE_CHANGELOG_PATTERN.md`
+- `docs/testing/PROTECTED_HANDLER_GOVERNANCE_MILESTONES.md`
+- `docs/testing/PROTECTED_HANDLER_GOVERNANCE_MILESTONE_PATTERN.md`
+
 ## Key Helpers
 - `tests/integration/helpers/api-contract-registry.ts`
 - `tests/integration/helpers/handler-contract-fixtures.ts`
