@@ -69,7 +69,11 @@ Provides a single navigation point for SmartPRO’s protected-handler governance
 - `tests/integration/handlers/protected-handler-exclusion-review-summary.integrity.test.ts`
 - `tests/integration/handlers/protected-handler-report-parity.integrity.test.ts`
 
-## Local Visibility Commands
+## Visibility and reports
+- `docs/testing/PROTECTED_HANDLER_LOCAL_VISIBILITY_COMMANDS.md`
+- `docs/testing/PROTECTED_HANDLER_REVIEW_REPORT_WORKFLOW.md`
+
+### Local commands
 - `npm run verify`
 - `npm run review:protected-handlers`
 - `npm run review:protected-handlers:json`
