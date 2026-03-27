@@ -1,5 +1,6 @@
 import { AuthError } from "../../auth/guards";
 import { TenantScopeError } from "../../data/tenant-scope";
+import { RoleScopeInvariantError } from "./role-scope-invariant-error";
 
 export interface MappedApiError {
   status: number;
@@ -54,6 +55,14 @@ export function mapAuthRelatedError(error: unknown): MappedApiError {
           message: "Resource not found",
         };
     }
+  }
+
+  if (error instanceof RoleScopeInvariantError) {
+    return {
+      status: 400,
+      code: error.code,
+      message: error.message,
+    };
   }
 
   return {

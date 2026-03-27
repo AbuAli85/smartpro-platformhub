@@ -3,9 +3,10 @@ import { requireAuth, requirePermission } from "../../auth/guards";
 import { PERMISSIONS } from "../../auth/permissions";
 import { createAuditRepositoryImpl } from "../../audit/audit-repository.impl";
 import { createAuditService } from "../../audit/audit-service";
-import type { DbAdapter } from "../../data/db-adapter";
+import type { DbAdapter, DbTransaction } from "../../data/db-adapter";
 import { createUserRolesRepository } from "../../data/user-roles-repository.impl";
 import type { UserRoleRecord } from "../../data/user-roles-repository";
+import { RoleScopeInvariantError } from "../errors/role-scope-invariant-error";
 
 export interface AssignUserRoleTransactionalInput {
   targetUserId: string;
@@ -26,6 +27,8 @@ export async function assignUserRoleTransactional(
   requirePermission(auth, PERMISSIONS.ROLES_MANAGE);
 
   return deps.db.transaction(async (tx) => {
+    await assertRoleAssignmentMatchesScope(tx, input);
+
     const userRolesRepository = createUserRolesRepository(tx);
     const auditRepository = createAuditRepositoryImpl(tx);
     const auditService = createAuditService(auditRepository);
@@ -57,4 +60,36 @@ export async function assignUserRoleTransactional(
 
     return created;
   });
+}
+
+async function assertRoleAssignmentMatchesScope(
+  tx: DbTransaction,
+  input: AssignUserRoleTransactionalInput,
+): Promise<void> {
+  const result = await tx.query<{ scope_type: string }>(
+    `
+    select scope_type
+    from public.roles
+    where id = $1
+    limit 1
+    `,
+    [input.roleId],
+  );
+
+  const scopeType = result.rows[0]?.scope_type;
+  if (!scopeType) {
+    throw new RoleScopeInvariantError("Role not found");
+  }
+
+  const companyId = input.companyId ?? null;
+
+  if (scopeType === "company" && !companyId) {
+    throw new RoleScopeInvariantError("Company role requires company_id");
+  }
+
+  if (scopeType === "platform" && companyId !== null) {
+    throw new RoleScopeInvariantError(
+      "Platform role cannot be assigned with company_id",
+    );
+  }
 }
