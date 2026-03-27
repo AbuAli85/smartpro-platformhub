@@ -6,7 +6,9 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node"]
   },
-  "include": ["scripts/**/*.ts", "packages/**/*.ts", "tests/**/*.ts"]
+  "include": ["scripts/**/*.ts", "packages/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["packages/auth/examples/**"]
 }

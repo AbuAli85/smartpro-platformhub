@@ -12,7 +12,7 @@ async function main() {
   const migrationsDir = path.resolve("database/migrations");
   const files = fs
     .readdirSync(migrationsDir)
-    .filter((file) => file.endsWith(".sql"))
+    .filter((file: string) => file.endsWith(".sql"))
     .sort();
 
   try {

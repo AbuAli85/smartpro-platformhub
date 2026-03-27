@@ -14,6 +14,7 @@ interface CaseRow {
   status: string;
   created_at?: string;
   updated_at?: string;
+  [key: string]: unknown;
 }
 
 function mapCaseRow(row: CaseRow): CaseRecord {

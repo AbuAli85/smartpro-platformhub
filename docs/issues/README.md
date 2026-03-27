@@ -44,4 +44,11 @@ For implementation-heavy backend issues, the expected local verification command
 
 A backend task should not be treated as complete if the full verification gate fails.
 
+## Verification Modes
+
+- Local: `npm run verify`
+- CI: `npm run verify:ci`
+
+Both must pass for backend work to be considered complete.
+
 See also `docs/AI_EXECUTION_RULES.md`.

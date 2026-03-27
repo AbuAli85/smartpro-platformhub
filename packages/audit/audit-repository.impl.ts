@@ -14,6 +14,7 @@ interface AuditEventRow {
   after_json: unknown | null;
   metadata_json: unknown | null;
   created_at: string;
+  [key: string]: unknown;
 }
 
 function mapAuditEventRow(row: AuditEventRow): AuditEventRecord {

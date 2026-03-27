@@ -15,6 +15,7 @@ interface DocumentRow {
   storage_path: string;
   created_at?: string;
   updated_at?: string;
+  [key: string]: unknown;
 }
 
 function mapDocumentRow(row: DocumentRow): DocumentRecord {

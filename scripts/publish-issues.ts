@@ -5,7 +5,7 @@ import { execSync } from "node:child_process";
 const issuesDir = path.resolve("docs/issues");
 
 function getIssueFiles(): string[] {
-  return fs.readdirSync(issuesDir).filter((f) => f.endsWith(".md"));
+  return fs.readdirSync(issuesDir).filter((f: string) => f.endsWith(".md"));
 }
 
 function extractTitle(content: string): string {

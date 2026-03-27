@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createAuditService } from "../../packages/audit/audit-service";
+import type { AuthContext } from "../../packages/auth/auth-context";
 import { PERMISSIONS } from "../../packages/auth/permissions";
 import { createPostgresPool, getPostgresConfigFromEnv } from "../../packages/data/postgres-config";
 import { PostgresAdapter } from "../../packages/data/postgres-adapter";
@@ -25,7 +26,7 @@ describe("assign user role transactional flow", () => {
       scopeType: "company",
     });
 
-    const auth = {
+    const auth: AuthContext = {
       userId: actor.id,
       platformRoles: ["platform_admin"],
       platformPermissions: [PERMISSIONS.ROLES_MANAGE],

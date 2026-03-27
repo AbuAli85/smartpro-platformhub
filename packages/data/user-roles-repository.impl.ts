@@ -12,6 +12,7 @@ interface UserRoleRow {
   company_id: string | null;
   assigned_by_user_id: string | null;
   created_at: string;
+  [key: string]: unknown;
 }
 
 function mapUserRoleRow(row: UserRoleRow): UserRoleRecord {
