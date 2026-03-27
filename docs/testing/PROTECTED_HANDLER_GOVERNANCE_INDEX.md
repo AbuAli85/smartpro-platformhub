@@ -3,6 +3,9 @@
 ## Purpose
 Provides a single navigation point for SmartPRO’s protected-handler governance system.
 
+## Architecture summary
+- `docs/architecture/PROTECTED_HANDLER_GOVERNANCE_ARCHITECTURE.md`
+
 ## Core Governance
 - `docs/testing/PROTECTED_HANDLER_ONBOARDING_CHECKLIST.md`
 - `docs/testing/PROTECTED_HANDLER_MERGE_READINESS.md`
