@@ -49,6 +49,13 @@ Provides a single navigation point for SmartPRO’s protected-handler governance
 - `docs/testing/PROTECTED_HANDLER_GOVERNANCE_MILESTONES.md`
 - `docs/testing/PROTECTED_HANDLER_GOVERNANCE_MILESTONE_PATTERN.md`
 
+## Governance health and local commands
+- `docs/testing/PROTECTED_HANDLER_GOVERNANCE_HEALTH_PATTERN.md`
+- `docs/testing/PROTECTED_HANDLER_HEALTH_INTERPRETATION.md`
+- `docs/testing/PROTECTED_HANDLER_GOVERNANCE_HEALTH_REPORT_WORKFLOW.md`
+- `docs/testing/PROTECTED_HANDLER_GOVERNANCE_LOCAL_COMMANDS.md`
+- `npm run review:governance-health`
+
 ## Key Helpers
 - `tests/integration/helpers/api-contract-registry.ts`
 - `tests/integration/helpers/handler-contract-fixtures.ts`
@@ -83,6 +90,7 @@ Provides a single navigation point for SmartPRO’s protected-handler governance
 - `npm run verify`
 - `npm run review:protected-handlers`
 - `npm run review:protected-handlers:json`
+- `npm run review:governance-health`
 
 ## How to Use This Index
 - start with onboarding and merge-readiness for new handlers

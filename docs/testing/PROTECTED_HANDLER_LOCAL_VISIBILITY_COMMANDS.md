@@ -11,8 +11,8 @@ Lists the main local commands for inspecting protected-handler governance state.
 ### Run full verification
 - `npm run verify`
 
-### Future (planned)
-- governance health summary (lightweight snapshot)
+### Governance health snapshot
+- `npm run review:governance-health`
 
 ## Notes
 - exclusion review output is derived from repo-state governance helpers
