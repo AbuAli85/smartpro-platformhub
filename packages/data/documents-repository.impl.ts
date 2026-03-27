@@ -1,4 +1,4 @@
-import type { DbAdapter } from "./db-adapter";
+import type { DbExecutor } from "./db-adapter";
 import type {
   DocumentRecord,
   DocumentsRepository,
@@ -30,7 +30,7 @@ function mapDocumentRow(row: DocumentRow): DocumentRecord {
 }
 
 export function createDocumentsRepositoryImpl(
-  db: DbAdapter,
+  db: DbExecutor,
 ): DocumentsRepository {
   return {
     async getByIdInCompany(

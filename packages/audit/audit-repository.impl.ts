@@ -1,4 +1,4 @@
-import type { DbAdapter } from "../data/db-adapter";
+import type { DbExecutor } from "../data/db-adapter";
 import type { AuditRepository } from "./audit-repository";
 import type { AuditEventInput, AuditEventRecord } from "./types";
 
@@ -32,7 +32,7 @@ function mapAuditEventRow(row: AuditEventRow): AuditEventRecord {
   };
 }
 
-export function createAuditRepositoryImpl(db: DbAdapter): AuditRepository {
+export function createAuditRepositoryImpl(db: DbExecutor): AuditRepository {
   return {
     async createEvent(input: AuditEventInput): Promise<AuditEventRecord> {
       const result = await db.query<AuditEventRow>(
@@ -75,11 +75,11 @@ export function createAuditRepositoryImpl(db: DbAdapter): AuditRepository {
         ],
       );
 
-      const row = result.rows[0];
-      if (!row) {
+      if (!result.rows[0]) {
         throw new Error("Audit insert returned no row");
       }
-      return mapAuditEventRow(row);
+
+      return mapAuditEventRow(result.rows[0]);
     },
   };
 }

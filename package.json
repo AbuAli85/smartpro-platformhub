@@ -3,6 +3,9 @@
   "private": true,
   "description": "SmartPRO platform — scripts and packages",
   "scripts": {
-    "publish-issues": "npx --yes tsx scripts/publish-issues.ts"
+    "publish-issues": "npx --yes tsx scripts/publish-issues.ts",
+    "migrate": "npx --yes tsx scripts/run-migrations.ts",
+    "reset-test-db": "npx --yes tsx scripts/reset-test-db.ts",
+    "verify": "npx --yes tsx scripts/run-quality-gate.ts"
   }
 }

@@ -1,4 +1,4 @@
-import type { DbAdapter } from "./db-adapter";
+import type { DbExecutor } from "./db-adapter";
 import type {
   CaseRecord,
   CasesRepository,
@@ -27,7 +27,7 @@ function mapCaseRow(row: CaseRow): CaseRecord {
   };
 }
 
-export function createCasesRepositoryImpl(db: DbAdapter): CasesRepository {
+export function createCasesRepositoryImpl(db: DbExecutor): CasesRepository {
   return {
     async getByIdInCompany(
       params: GetCaseByIdInCompanyParams,

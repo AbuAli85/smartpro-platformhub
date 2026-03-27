@@ -11,10 +11,29 @@ Markdown drafts for GitHub issues. Each file should:
 From the repo root, with [GitHub CLI](https://cli.github.com/) authenticated (`gh auth login`):
 
 ```bash
-npm install
 npm run publish-issues
 ```
 
 **Caution:** This creates one GitHub issue per `.md` file every run. Use for an initial import or extend the script to avoid duplicates.
+
+## Publishing and Verification
+
+Before publishing implementation issues, make sure:
+- the issue has `Status: READY_FOR_AI`
+- the issue has `Priority`
+- local verification scripts are available where relevant
+
+Suggested local workflow before or after implementation:
+- `npm run migrate`
+- `npm run reset-test-db`
+- `npm run verify`
+
+## Quality Gate Expectation
+
+For implementation-heavy backend issues, expected local verification is:
+
+- `npm run verify`
+
+This should apply migrations, reset the test DB, and run integration tests through one standard command.
 
 See also `docs/AI_EXECUTION_RULES.md`.
