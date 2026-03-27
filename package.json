@@ -6,6 +6,9 @@
     "publish-issues": "npx --yes tsx scripts/publish-issues.ts",
     "migrate": "npx --yes tsx scripts/run-migrations.ts",
     "reset-test-db": "npx --yes tsx scripts/reset-test-db.ts",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test:integration": "vitest run",
     "verify": "npx --yes tsx scripts/run-quality-gate.ts"
   }
 }

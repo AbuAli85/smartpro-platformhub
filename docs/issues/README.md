@@ -36,4 +36,12 @@ For implementation-heavy backend issues, expected local verification is:
 
 This should apply migrations, reset the test DB, and run integration tests through one standard command.
 
+## Strict Completion Gate
+
+For implementation-heavy backend issues, the expected local verification command is:
+
+- `npm run verify`
+
+A backend task should not be treated as complete if the full verification gate fails.
+
 See also `docs/AI_EXECUTION_RULES.md`.
