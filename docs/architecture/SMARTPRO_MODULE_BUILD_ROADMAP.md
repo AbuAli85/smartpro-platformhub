@@ -13,6 +13,8 @@ It answers:
 It works together with:
 
 - `docs/architecture/AI_SOFTWARE_FACTORY_OPERATING_MODEL.md` — roles, handoffs, completion rules
+- `docs/architecture/AI_EXECUTION_LOOP.md` — autonomous loop, issue states, verify gate
+- `docs/architecture/ISSUE_AUTOGENERATION_RULES.md` — follow-up issues after closed work
 - `docs/architecture/PROTECTED_HANDLER_GOVERNANCE_ARCHITECTURE.md` — protected-handler and contract governance
 - `docs/testing/PROTECTED_HANDLER_GOVERNANCE_INDEX.md` — detailed governance navigation
 

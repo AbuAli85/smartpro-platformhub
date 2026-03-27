@@ -6,6 +6,8 @@ This document defines how SmartPRO is built using **specialized AI roles**, **is
 
 It complements:
 
+- `docs/architecture/AI_EXECUTION_LOOP.md` — autonomous loop, issue states, labels, completion and failure handling
+- `docs/architecture/ISSUE_AUTOGENERATION_RULES.md` — follow-up issue generation after closed work
 - `docs/architecture/PROTECTED_HANDLER_GOVERNANCE_ARCHITECTURE.md` — protected-handler contract and exception governance
 - `docs/testing/PROTECTED_HANDLER_GOVERNANCE_INDEX.md` — navigation for testing and governance docs
 - `docs/architecture/SMARTPRO_MODULE_BUILD_ROADMAP.md` — ordered build plan for product modules

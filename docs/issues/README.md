@@ -2,9 +2,15 @@
 
 Markdown drafts for GitHub issues. Each file should:
 
-- Start with `Status: READY_FOR_AI` (or `IN_PROGRESS` / `DONE` when you adopt that workflow)
+- Start with `Status:` matching the [issue state machine](../architecture/AI_EXECUTION_LOOP.md#issue-state-machine), e.g. `READY_FOR_AI`, `IN_PROGRESS`, `COMPLETE`, `BLOCKED`
 - Include `Priority: P0` | `P1` | `P2` as needed
 - Use a single `# Title` line for the issue title (used by `scripts/publish-issues.ts`)
+
+List drafts that are `READY_FOR_AI`:
+
+```bash
+npm run orchestration:list-ready
+```
 
 ## Publish to GitHub
 

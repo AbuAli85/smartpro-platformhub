@@ -1,5 +1,7 @@
 # AI Execution Rules
 
+For the full **autonomous execution loop** (issue states, GitHub labels, verify gate, and handoffs), see `docs/architecture/AI_EXECUTION_LOOP.md` and `docs/architecture/ISSUE_AUTOGENERATION_RULES.md`.
+
 ## Source of Truth
 - All tasks originate from `docs/issues/`
 - Only tasks marked `Status: READY_FOR_AI` can be executed
