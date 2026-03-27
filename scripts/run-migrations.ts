@@ -5,6 +5,8 @@ import {
   getPostgresConfigFromEnv,
 } from "../packages/data/postgres-config";
 
+const MIGRATION_LOCK_KEY = 90420260327;
+
 async function ensureMigrationStateTable() {
   const config = getPostgresConfigFromEnv();
   const pool = createPostgresPool(config);
@@ -27,6 +29,7 @@ async function main() {
 
   const config = getPostgresConfigFromEnv();
   const pool = createPostgresPool(config);
+  const client = await pool.connect();
 
   const migrationsDir = path.resolve("database/migrations");
   const files = fs
@@ -35,8 +38,19 @@ async function main() {
     .sort();
 
   try {
+    const lockResult = await client.query<{ locked: boolean }>(
+      `select pg_try_advisory_lock($1) as locked`,
+      [MIGRATION_LOCK_KEY],
+    );
+
+    if (!lockResult.rows[0]?.locked) {
+      throw new Error(
+        "Could not acquire migration lock. Another migration runner may already be active.",
+      );
+    }
+
     for (const file of files) {
-      const alreadyApplied = await pool.query(
+      const alreadyApplied = await client.query(
         `
         select 1
         from public.schema_migrations
@@ -56,25 +70,25 @@ async function main() {
 
       console.log(`Applying migration: ${file}`);
 
-      const client = await pool.connect();
-      try {
-        await client.query(sql);
-        await client.query(
-          `
-          insert into public.schema_migrations (filename)
-          values ($1)
-          `,
-          [file],
-        );
-      } catch (error) {
-        throw error;
-      } finally {
-        client.release();
-      }
+      await client.query(sql);
+
+      await client.query(
+        `
+        insert into public.schema_migrations (filename)
+        values ($1)
+        `,
+        [file],
+      );
     }
 
     console.log("All pending migrations applied successfully.");
   } finally {
+    try {
+      await client.query(`select pg_advisory_unlock($1)`, [MIGRATION_LOCK_KEY]);
+    } catch {
+      // best effort unlock
+    }
+    client.release();
     await pool.end();
   }
 }
