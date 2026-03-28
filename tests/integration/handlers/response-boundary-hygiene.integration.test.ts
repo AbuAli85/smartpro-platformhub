@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { PERMISSIONS } from "../../../packages/auth/permissions";
 import { createCasesRepositoryImpl } from "../../../packages/data/cases-repository.impl";
 import { createDocumentsRepositoryImpl } from "../../../packages/data/documents-repository.impl";
+import { createServiceRequestsRepositoryImpl } from "../../../packages/data/service-requests-repository.impl";
 import { assignUserRoleTransactionalHandler } from "../../../packages/server/admin/assign-user-role.handler";
 import { getCaseByIdHandler } from "../../../packages/server/cases/get-case-by-id.handler";
 import { updateDocumentStatusHandler } from "../../../packages/server/documents/update-document-status.handler";
+import { createServiceRequestDraftHandler } from "../../../packages/server/service-requests/create-service-request-draft.handler";
 import {
   createAuthContext,
   withActiveMembership,
@@ -187,5 +189,29 @@ describe("response boundary hygiene", () => {
 
     expectCleanTopLevelResponse(result);
     expectCleanMappedError(result.error);
+  });
+
+  it("does not leak internal metadata in successful service request responses", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_CREATE],
+    );
+
+    const result = await createServiceRequestDraftHandler(
+      { auth, serviceRequestsRepository: repo },
+      { companyId: company.id, serviceId: "svc-hygiene" },
+    );
+
+    expect(result.status).toBe(200);
+    if (result.status !== 200 || !result.data) {
+      throw new Error("expected success");
+    }
+
+    expectCleanTopLevelResponse(result);
+    expectCleanSuccessPayload(result.data);
   });
 });

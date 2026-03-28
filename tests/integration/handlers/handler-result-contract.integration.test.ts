@@ -2,11 +2,13 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { PERMISSIONS } from "../../../packages/auth/permissions";
 import { createCasesRepositoryImpl } from "../../../packages/data/cases-repository.impl";
 import { createDocumentsRepositoryImpl } from "../../../packages/data/documents-repository.impl";
+import { createServiceRequestsRepositoryImpl } from "../../../packages/data/service-requests-repository.impl";
 import { createPostgresPool, getPostgresConfigFromEnv } from "../../../packages/data/postgres-config";
 import { PostgresAdapter } from "../../../packages/data/postgres-adapter";
 import { assignUserRoleTransactionalHandler } from "../../../packages/server/admin/assign-user-role.handler";
 import { getCaseByIdHandler } from "../../../packages/server/cases/get-case-by-id.handler";
 import { updateDocumentStatusHandler } from "../../../packages/server/documents/update-document-status.handler";
+import { createServiceRequestDraftHandler } from "../../../packages/server/service-requests/create-service-request-draft.handler";
 import {
   createAuthContext,
   withActiveMembership,
@@ -168,5 +170,41 @@ describe("protected handler result contract", () => {
     } finally {
       await pool.end();
     }
+  });
+
+  it("returns { status, data } on successful service request draft create", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_CREATE],
+    );
+
+    const result = await createServiceRequestDraftHandler(
+      { auth, serviceRequestsRepository: repo },
+      { companyId: company.id, serviceId: "svc-rc" },
+    );
+
+    expect(result.status).toBe(200);
+    expect(result.data).toBeDefined();
+    expect("error" in result).toBe(false);
+    expect("data" in result).toBe(true);
+  });
+
+  it("returns { status, error } on unauthenticated service request draft create", async () => {
+    const company = await seedCompany();
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+
+    const result = await createServiceRequestDraftHandler(
+      { auth: null, serviceRequestsRepository: repo },
+      { companyId: company.id, serviceId: "svc-rc" },
+    );
+
+    expect(result.status).toBe(401);
+    expect(result.error).toBeDefined();
+    expect("data" in result).toBe(false);
+    expect("error" in result).toBe(true);
   });
 });

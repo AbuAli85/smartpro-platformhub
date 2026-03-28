@@ -3,7 +3,11 @@
  * Keep aligned with `GOVERNED_HANDLER_NAMES` in `governance-assets.ts` and governance documentation.
  */
 export const DOCUMENTED_GOVERNED_HANDLERS = [
-  "getCaseByIdHandler",
-  "updateDocumentStatusHandler",
   "assignUserRoleTransactionalHandler",
+  "createServiceRequestDraftHandler",
+  "getCaseByIdHandler",
+  "getServiceRequestByIdHandler",
+  "listServiceRequestsByCompanyHandler",
+  "updateDocumentStatusHandler",
+  "updateServiceRequestStatusHandler",
 ] as const;

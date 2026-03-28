@@ -12,13 +12,17 @@ Ordered **AI-ready work** for Module 1 (booking / service request lifecycle), wi
 
 | # | Issue file (draft) | Primary role | Initial Status | Dependency |
 |---|-------------------|---------------|----------------|------------|
-| 1 | `module-01-add-service-requests-table-and-repository.md` | Backend | **IN_PROGRESS** (implementation landed; close with `DONE` after verify) | none |
-| 2 | `module-01-docs-align-service-request-lifecycle.md` | Docs | **READY_FOR_AI** | none (can parallel #1) |
-| 3 | `module-01-protected-handlers-service-requests.md` | Backend | **DRAFT** (→ `READY_FOR_AI` only after #1 is `DONE` / verify green) | after #1 closed operationally |
-| 4 | `module-01-link-cases-to-service-requests.md` | Backend | DRAFT | after #1; coordinates with #3 |
-| 5 | `module-01-integration-tests-service-request-flows.md` | QA | DRAFT | after #3 (expand as handlers land) |
+| 1 | `module-01-add-service-requests-table-and-repository.md` | Backend | **DONE** (closed with PR #12 Verify run `23683511138`) | none |
+| 2 | `module-01-docs-align-service-request-lifecycle.md` | Docs | **DONE** (same verify run as #1) | none (can parallel #1) |
+| 3 | `module-01-protected-handlers-service-requests.md` | Backend | **DONE** (PR #12 Verify run `23683896247`) | after #1 + #2 verified (met) |
+| 4 | `module-01-link-cases-to-service-requests.md` | Backend | **READY_FOR_AI** | after #3 **DONE** (met) |
+| 5 | `module-01-integration-tests-service-request-flows.md` | QA | DRAFT | after #4 (end-to-end convert path) |
 
 **Promotion rule:** Slice *n* is **operationally complete** only when **`npm run verify` passes** (not merely when code is pushed). Then set slice *n+1* from **DRAFT** to **READY_FOR_AI** in `docs/issues/` (or update GitHub labels). **Implementation without a green verify is not a closed slice.**
+
+**Authoritative gate:** Prefer **GitHub Actions** `.github/workflows/verify.yml` (`verify:ci`) as the shared proof when available. Local `npm run verify` with a Postgres-backed `DATABASE_URL` is equivalent.
+
+**Slices #1 and #2 together:** Backend slice **#1** and docs slice **#2** may both move to **`DONE`** after the **same** green verify run, when docs are already aligned and no docs-only failure applies—one gate, one transition decision for both, then promote **#3** to **`READY_FOR_AI`**.
 
 ---
 

@@ -115,6 +115,38 @@ Examples: `module:booking`, `module:documents`, `module:contracts`, `module:admi
 
 Use the repository **Labels** settings or `gh label create` (see GitHub CLI docs). Keep names stable so scripts and docs do not drift.
 
+**Idempotent sync (recommended):** from the repo root with GitHub CLI authenticated (`gh auth login`):
+
+```bash
+npm run orchestration:sync-github-labels
+```
+
+This runs `scripts/sync-github-labels.ts`, which upserts every `ai-state:*` and `ai-role:*` label from the tables above (`gh label create … --force`).
+
+### Cursor Cloud Agent / Automation hook (READY_FOR_AI)
+
+GitHub is the control plane; **Cursor Automations** can run cloud agents on schedules or triggers. Native GitHub automation triggers in Cursor cover PR and push events, not “issue labeled,” so this repo wires **issue readiness** through GitHub Actions:
+
+1. **Labels:** apply `ai-state:ready-for-ai` when an issue is executable (exactly one `ai-state:*` at a time per your convention).
+2. **Automation:** in [Cursor Automations](https://cursor.com/automations), create an automation with a **Webhook** trigger, select this repository and default branch, enable **Open pull request** (and environment install if the agent must run `npm run verify`), and paste the prompt below (adapt as needed).
+3. **Repository secrets** (GitHub → Settings → Secrets and variables → Actions):
+   - `CURSOR_AUTOMATION_WEBHOOK_URL` — webhook URL shown after you save the automation.
+   - `CURSOR_AUTOMATION_WEBHOOK_KEY` — optional; if Cursor shows an API key for the webhook, store it here (the workflow sends `Authorization: Bearer …` when set).
+4. **Workflow:** `.github/workflows/cursor-ready-for-ai-webhook.yml` POSTs a JSON payload when an issue is **opened** already carrying `ai-state:ready-for-ai`, or when that label is **added**. If `CURSOR_AUTOMATION_WEBHOOK_URL` is unset, the job skips so forks and local testing are unaffected.
+
+**Suggested automation prompt (starter):**
+
+You are triggered when GitHub signals an issue labeled `ai-state:ready-for-ai`. The webhook body includes `issue.number`, `issue.title`, `issue.html_url`, `issue.body`, and `issue.labels`.
+
+1. Open the GitHub issue from `issue.html_url`. If it also has `ai-role:*`, treat that as the primary role per `docs/architecture/AI_EXECUTION_LOOP.md`.
+2. If the issue is not clearly executable (missing acceptance criteria, conflicting labels, or not actually ready), add a short GitHub comment explaining why and do not open a PR.
+3. Otherwise implement the change on a new branch, run `npm run verify` (or `npm run verify:ci` if that matches the environment), and open a PR that references the issue. Do not merge; **GitHub Actions** `verify.yml` is the merge gate.
+4. If verify fails after a reasonable fix attempt, comment on the issue with the failure summary and suggest `ai-state:blocked` or keep `ai-state:in-progress` per team practice.
+
+Completion remains gated by **`.github/workflows/verify.yml`** on pull requests; the automation prepares work, CI proves it.
+
+**Full cutover sequence (merge → labels → Cursor → secrets → dry run → habits):** `docs/architecture/CURSOR_GITHUB_CUTOVER_CHECKLIST.md`.
+
 ---
 
 ## 5. Role routing rules
@@ -210,6 +242,8 @@ That is **not required** to adopt this document; labels + verify + autogeneratio
 |--------|---------------------|
 | Local verify | `npm run verify` |
 | List draft issues ready for AI | `npm run orchestration:list-ready` |
+| Sync GitHub `ai-state:*` / `ai-role:*` labels | `npm run orchestration:sync-github-labels` |
+| GitHub ↔ Cursor automation cutover (ordered checklist) | `docs/architecture/CURSOR_GITHUB_CUTOVER_CHECKLIST.md` |
 | Publish drafts (bulk) | `npm run publish-issues` (use with care) |
 
 ---

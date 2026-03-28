@@ -3,7 +3,11 @@
  * Update when adding a new protected handler so onboarding and registry stay intentional.
  */
 export const INVENTORIED_PROTECTED_HANDLERS = [
-  "getCaseByIdHandler",
-  "updateDocumentStatusHandler",
   "assignUserRoleTransactionalHandler",
+  "createServiceRequestDraftHandler",
+  "getCaseByIdHandler",
+  "getServiceRequestByIdHandler",
+  "listServiceRequestsByCompanyHandler",
+  "updateDocumentStatusHandler",
+  "updateServiceRequestStatusHandler",
 ] as const;

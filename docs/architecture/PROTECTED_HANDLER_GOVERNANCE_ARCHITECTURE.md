@@ -23,6 +23,7 @@ Examples in the current system:
 - `getCaseByIdHandler`
 - `updateDocumentStatusHandler`
 - `assignUserRoleTransactionalHandler`
+- `createServiceRequestDraftHandler`, `getServiceRequestByIdHandler`, `listServiceRequestsByCompanyHandler`, `updateServiceRequestStatusHandler` (Module 1 service requests)
 
 ---
 

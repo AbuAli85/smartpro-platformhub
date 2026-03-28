@@ -25,7 +25,7 @@ A tenant-scoped record is any record that belongs to a specific company, directl
 
 Examples of tenant-scoped records:
 - memberships
-- service requests
+- service requests (`public.service_requests` — see `docs/architecture/MODULE_01_BOOKING_SERVICE_REQUEST_LIFECYCLE.md`)
 - cases
 - documents
 - invoices

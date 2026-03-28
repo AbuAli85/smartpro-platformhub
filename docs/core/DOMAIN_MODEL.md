@@ -103,6 +103,14 @@ Represents an initial request submitted for a service.
 - A submitted request must belong to a company and a service.
 - A request may later generate a case.
 
+### Implementation status (repository)
+
+**PostgreSQL:** `public.service_requests` in `database/migrations/20260327_006_service_requests.sql` — columns `company_id`, `service_id`, `requested_by_user_id`, `status` (CHECK-enforced set matching **Candidate Statuses** above), nullable `submitted_at`, `created_at`, `updated_at`, plus `set_updated_at` trigger consistent with `cases` / `documents`.
+
+**Application:** tenant-scoped repository in `packages/data/service-requests-repository.ts` and `service-requests-repository.impl.ts`; integration coverage in `tests/integration/service-requests-repository.integration.test.ts`.
+
+**Follow-on slices:** HTTP surface and contract governance are tracked in `docs/issues/module-01-protected-handlers-service-requests.md`. Linking `cases` ↔ `service_requests` in the database is tracked in `docs/issues/module-01-link-cases-to-service-requests.md` (domain `serviceRequestId` below is not yet a `public.cases` column).
+
 ---
 
 ## Case
@@ -112,7 +120,7 @@ Represents an operational business record that tracks delivery of a service.
 - `id`
 - `companyId`
 - `serviceId`
-- `serviceRequestId`
+- `serviceRequestId` — optional link to a **ServiceRequest** once persisted; **not yet** a column on `public.cases` (see `docs/architecture/MODULE_01_ISSUE_EXECUTION_TREE.md` slice C / `docs/issues/module-01-link-cases-to-service-requests.md`).
 - `assignedToUserId`
 - `status`
 - `priority`

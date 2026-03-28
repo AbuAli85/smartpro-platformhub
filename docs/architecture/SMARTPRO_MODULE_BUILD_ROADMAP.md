@@ -53,6 +53,7 @@ A module is **complete** for factory purposes when:
 - Architecture breakdown: `docs/architecture/MODULE_01_BOOKING_SERVICE_REQUEST_LIFECYCLE.md`
 - Issue tree (order, roles, promotion): `docs/architecture/MODULE_01_ISSUE_EXECUTION_TREE.md`
 - Issue drafts: `docs/issues/module-01-*.md` (start with `Status: READY_FOR_AI` items in the tree)
+- Canonical domain entities and **ServiceRequest implementation status**: `docs/core/DOMAIN_MODEL.md` (ServiceRequest section)
 
 **Why first**
 

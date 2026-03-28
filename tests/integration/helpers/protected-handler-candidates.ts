@@ -3,9 +3,13 @@
  * Each candidate must appear in `INVENTORIED_PROTECTED_HANDLERS` or `EXPLICITLY_UNGOVERNED_HANDLER_CANDIDATES`.
  */
 export const PROTECTED_HANDLER_CANDIDATES = [
-  "getCaseByIdHandler",
-  "updateDocumentStatusHandler",
   "assignUserRoleTransactionalHandler",
+  "createServiceRequestDraftHandler",
+  "getCaseByIdHandler",
+  "getServiceRequestByIdHandler",
+  "listServiceRequestsByCompanyHandler",
+  "updateDocumentStatusHandler",
+  "updateServiceRequestStatusHandler",
 ] as const;
 
 /** Candidates intentionally not governed; must not overlap inventory. */

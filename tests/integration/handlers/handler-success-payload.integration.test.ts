@@ -2,11 +2,13 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { PERMISSIONS } from "../../../packages/auth/permissions";
 import { createCasesRepositoryImpl } from "../../../packages/data/cases-repository.impl";
 import { createDocumentsRepositoryImpl } from "../../../packages/data/documents-repository.impl";
+import { createServiceRequestsRepositoryImpl } from "../../../packages/data/service-requests-repository.impl";
 import { createPostgresPool, getPostgresConfigFromEnv } from "../../../packages/data/postgres-config";
 import { PostgresAdapter } from "../../../packages/data/postgres-adapter";
 import { assignUserRoleTransactionalHandler } from "../../../packages/server/admin/assign-user-role.handler";
 import { getCaseByIdHandler } from "../../../packages/server/cases/get-case-by-id.handler";
 import { updateDocumentStatusHandler } from "../../../packages/server/documents/update-document-status.handler";
+import { createServiceRequestDraftHandler } from "../../../packages/server/service-requests/create-service-request-draft.handler";
 import {
   createAuthContext,
   withActiveMembership,
@@ -23,6 +25,8 @@ const SNAKE_CASE_LEAK_KEYS = [
   "case_id",
   "storage_path",
   "assigned_by_user_id",
+  "requested_by_user_id",
+  "submitted_at",
   "created_at",
   "updated_at",
 ] as const;
@@ -168,5 +172,44 @@ describe("protected handler success payload integrity", () => {
     } finally {
       await pool.end();
     }
+  });
+
+  it("returns the expected service request payload fields without raw DB field leakage", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_CREATE],
+    );
+
+    const result = await createServiceRequestDraftHandler(
+      { auth, serviceRequestsRepository: repo },
+      { companyId: company.id, serviceId: "svc-payload" },
+    );
+
+    expect(result.status).toBe(200);
+    if (result.status !== 200 || !result.data) {
+      throw new Error("expected service request success payload");
+    }
+
+    expect(sortedKeys(result.data)).toEqual(
+      [
+        "companyId",
+        "createdAt",
+        "id",
+        "requestedByUserId",
+        "serviceId",
+        "status",
+        "submittedAt",
+        "updatedAt",
+      ].sort(),
+    );
+    expect(result.data.companyId).toBe(company.id);
+    expect(result.data.serviceId).toBe("svc-payload");
+    expect(result.data.status).toBe("draft");
+    expect(result.data.requestedByUserId).toBe(user.id);
+    expectNoSnakeCaseLeakage(result.data);
   });
 });

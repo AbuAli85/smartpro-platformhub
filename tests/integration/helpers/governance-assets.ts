@@ -3,9 +3,13 @@
  * Keep aligned with `API_CONTRACT_REGISTRY` and policy docs.
  */
 export const GOVERNED_HANDLER_NAMES = [
-  "getCaseByIdHandler",
-  "updateDocumentStatusHandler",
   "assignUserRoleTransactionalHandler",
+  "createServiceRequestDraftHandler",
+  "getCaseByIdHandler",
+  "getServiceRequestByIdHandler",
+  "listServiceRequestsByCompanyHandler",
+  "updateDocumentStatusHandler",
+  "updateServiceRequestStatusHandler",
 ] as const;
 
 export const REQUIRED_CONTRACT_GOVERNANCE_DOCS = [

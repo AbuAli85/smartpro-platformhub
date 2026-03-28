@@ -14,12 +14,13 @@ It aligns product language (“booking”, “service request”) with the canon
 |---------|----------------|--------|
 | User submits interest in a service | **ServiceRequest** | Pre-case workflow; permissions already exist (`service_requests:*` in RBAC seed). |
 | Operational delivery record | **Case** | Already persisted (`public.cases`); status machine matches case lifecycle. |
-| Link between them | `Case.serviceRequestId` (domain) | **Not yet in schema** — add after `service_requests` exists. |
+| Link between them | `Case.serviceRequestId` (domain) | **Not yet in `public.cases`** — `service_requests` exists; add nullable FK / convert flow in the Module 1 “link cases” slice. |
 
 Today’s repo:
 
-- **Cases** and **documents** are real tables and repositories; **ServiceRequest** is specified in the domain doc but **not** yet a table.
-- RBAC already anticipates service requests; implementation should close that gap.
+- **Cases**, **documents**, and **`public.service_requests`** are migrated; tenant-scoped **ServiceRequest** persistence lives in `packages/data/service-requests-repository*.ts` with integration tests.
+- **Case → ServiceRequest** FK in SQL is still outstanding (see `docs/issues/module-01-link-cases-to-service-requests.md`).
+- RBAC permissions `service_requests:*` are seeded; HTTP handlers are a separate slice (`docs/issues/module-01-protected-handlers-service-requests.md`).
 
 ---
 

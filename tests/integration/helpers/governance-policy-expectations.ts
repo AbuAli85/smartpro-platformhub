@@ -3,9 +3,13 @@
  * Intentionally overlaps other helpers so drift across layers is caught in tests.
  */
 export const POLICY_GOVERNED_HANDLERS = [
-  "getCaseByIdHandler",
-  "updateDocumentStatusHandler",
   "assignUserRoleTransactionalHandler",
+  "createServiceRequestDraftHandler",
+  "getCaseByIdHandler",
+  "getServiceRequestByIdHandler",
+  "listServiceRequestsByCompanyHandler",
+  "updateDocumentStatusHandler",
+  "updateServiceRequestStatusHandler",
 ] as const;
 
 export const REQUIRED_GOVERNANCE_POLICIES = [
