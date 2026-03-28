@@ -10,9 +10,10 @@ This file lives in **smartpro-platformhub**; actions below are performed **in th
 
 ### 1a. Install CODEOWNERS
 
-1. Copy `docs/operations/templates/business-services-hub-CODEOWNERS` to the implementation repo as **`.github/CODEOWNERS`** (or merge with an existing file).
-2. Replace every `@YOUR_ORG/...` placeholder with real GitHub usernames or teams.
-3. Adjust **path patterns** to match your tree (Next.js app router, `src/server`, `packages/api`, etc.).
+1. Copy **`docs/operations/templates/business-services-hub-CODEOWNERS`** to the implementation repo as **`.github/CODEOWNERS`** (domain-based globs).
+2. If the app is **Next.js + Supabase**, start from or **merge** **`templates/business-services-hub-CODEOWNERS.nextjs-supabase`** (covers `app/` vs `src/app/`, `middleware.ts`, `supabase/migrations`, `app/api/webhooks`, etc.).
+3. Replace every `@YOUR_ORG/...` placeholder with real GitHub usernames or teams.
+4. **Delete or fix** any pattern that does not match a real path (empty owner rules break nothing, but wrong coverage weakens review).
 
 **Rule:** paths that match **release authority** in `RACI.md` (auth, RBAC, billing, workflow core, migrations, infra) must have **owners who can enforce** the matrix, not only the author.
 

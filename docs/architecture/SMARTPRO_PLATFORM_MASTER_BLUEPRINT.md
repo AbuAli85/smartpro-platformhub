@@ -201,6 +201,7 @@ The platform is “ready” when:
 | `OWNERSHIP_MAP.md` | Named owners per concern; escalation |
 | `GOVERNED_EXECUTION_BINDING.md` | **Bind implementation repo:** CODEOWNERS, branch protection, required checks, ADR pointer, readiness gate |
 | `templates/business-services-hub-CODEOWNERS` | Copy to app repo `.github/CODEOWNERS` (after editing teams/paths) |
+| `templates/business-services-hub-CODEOWNERS.nextjs-supabase` | Optional merge-in for Next.js App Router + Supabase layout |
 
 ### AI control (`docs/ai/`)
 

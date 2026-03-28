@@ -1,0 +1,53 @@
+# Optional variant: Next.js (App Router) + Supabase layout
+# Copy to: business-services-hub/.github/CODEOWNERS
+# Merge with business-services-hub-CODEOWNERS or use alone. Replace @YOUR_ORG/...
+
+* @YOUR_ORG/default-reviewers
+
+# CI / automation
+/.github/workflows/ @YOUR_ORG/platform
+/.github/CODEOWNERS @YOUR_ORG/platform
+
+# Supabase: schema, RLS, edge functions (high risk)
+/supabase/migrations/ @YOUR_ORG/platform @YOUR_ORG/backend
+/supabase/seed.sql @YOUR_ORG/platform @YOUR_ORG/backend
+/supabase/config.toml @YOUR_ORG/platform
+/supabase/functions/ @YOUR_ORG/platform @YOUR_ORG/backend
+
+# Next.js middleware (auth redirects, session)
+/middleware.ts @YOUR_ORG/security @YOUR_ORG/backend
+/src/middleware.ts @YOUR_ORG/security @YOUR_ORG/backend
+
+# App Router: auth routes and API routes (adjust /app vs /src/app)
+/app/api/auth/ @YOUR_ORG/security @YOUR_ORG/backend
+/app/api/webhooks/ @YOUR_ORG/backend @YOUR_ORG/finance-tech
+/src/app/api/auth/ @YOUR_ORG/security @YOUR_ORG/backend
+/src/app/api/webhooks/ @YOUR_ORG/backend @YOUR_ORG/finance-tech
+
+# Broader API surface (tighten splits as the repo grows)
+/app/api/ @YOUR_ORG/backend
+/src/app/api/ @YOUR_ORG/backend
+
+# Server-only lib (guards, RBAC, data access)
+/lib/auth/ @YOUR_ORG/security @YOUR_ORG/backend
+/lib/rbac/ @YOUR_ORG/security @YOUR_ORG/platform
+/lib/permissions/ @YOUR_ORG/security @YOUR_ORG/backend
+/server/ @YOUR_ORG/backend
+/src/server/ @YOUR_ORG/backend
+
+# Supabase clients (service role, admin)
+/lib/supabase/ @YOUR_ORG/security @YOUR_ORG/backend
+/utils/supabase/ @YOUR_ORG/security @YOUR_ORG/backend
+
+# Domain modules (tune names to match your tree)
+/lib/billing/ @YOUR_ORG/finance-tech @YOUR_ORG/backend
+/lib/payments/ @YOUR_ORG/finance-tech @YOUR_ORG/backend
+/lib/booking/ @YOUR_ORG/product-engineering @YOUR_ORG/backend
+/lib/workflows/ @YOUR_ORG/platform @YOUR_ORG/backend
+/lib/notifications/ @YOUR_ORG/backend
+/lib/documents/ @YOUR_ORG/backend
+/lib/admin/ @YOUR_ORG/platform @YOUR_ORG/backend
+
+# If you use packages/ monorepo layout
+/packages/api/ @YOUR_ORG/backend
+/packages/auth/ @YOUR_ORG/security @YOUR_ORG/backend
