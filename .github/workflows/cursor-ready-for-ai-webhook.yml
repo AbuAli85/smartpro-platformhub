@@ -148,10 +148,13 @@ jobs:
             echo "401 usually means: wrong or revoked token, token included Bearer twice, or URL is for a different automation. In GitHub, set CURSOR_AUTOMATION_WEBHOOK_KEY to the exact token after Bearer from Cursor only. Regenerate in Cursor if unsure."
           fi
           if [ "${http_code}" = "400" ]; then
-            echo "400 means Cursor rejected the request body or URL. Check: (1) Webhook trigger in Cursor has no required custom input fields you are not sending—remove them or add matching JSON keys to this workflow. (2) Re-copy the webhook URL after Save. (3) After pushing this workflow, re-run to read the response body printed below."
+            echo "400 from Cursor: read the JSON below. It may be invalid payload/URL, or Cursor refusing to start an agent (failed_precondition / background composer = often concurrent-agent limit, billing, or automation env — fix in Cursor dashboard, not in this workflow)."
           fi
           if [ -s /tmp/cursor_webhook_resp.txt ]; then
             head -c 800 /tmp/cursor_webhook_resp.txt | tr -d '\r' || true
             echo
+            if grep -qE 'failed_precondition|background composer|Concurrent agent' /tmp/cursor_webhook_resp.txt 2>/dev/null; then
+              echo "::notice::Cursor failed_precondition / background composer: free agent slots, cancel stuck runs, or upgrade plan; GitHub payload delivery is working."
+            fi
           fi
           exit 1
