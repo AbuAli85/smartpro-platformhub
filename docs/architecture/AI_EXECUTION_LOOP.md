@@ -145,6 +145,8 @@ You are triggered when GitHub signals an issue labeled `ai-state:ready-for-ai`. 
 
 Completion remains gated by **`.github/workflows/verify.yml`** on pull requests; the automation prepares work, CI proves it.
 
+**Full cutover sequence (merge → labels → Cursor → secrets → dry run → habits):** `docs/architecture/CURSOR_GITHUB_CUTOVER_CHECKLIST.md`.
+
 ---
 
 ## 5. Role routing rules
@@ -241,6 +243,7 @@ That is **not required** to adopt this document; labels + verify + autogeneratio
 | Local verify | `npm run verify` |
 | List draft issues ready for AI | `npm run orchestration:list-ready` |
 | Sync GitHub `ai-state:*` / `ai-role:*` labels | `npm run orchestration:sync-github-labels` |
+| GitHub ↔ Cursor automation cutover (ordered checklist) | `docs/architecture/CURSOR_GITHUB_CUTOVER_CHECKLIST.md` |
 | Publish drafts (bulk) | `npm run publish-issues` (use with care) |
 
 ---
