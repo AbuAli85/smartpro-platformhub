@@ -23,9 +23,15 @@ Merge the integration branch/PR that adds these if they are not already on defau
 
 ## Ordered steps (execute in this order)
 
-### 1. Freeze labels in GitHub
+### 1. Merge integration PR to default branch
 
-On a machine with [GitHub CLI](https://cli.github.com/) authenticated (`gh auth login`), from the repo root:
+Merge the PR that contains the bridge, label sync, and this checklist (e.g. **PR #12**) into **`main`** (or your production default branch).
+
+Until this lands, the automation is not **live** for the rest of the org—only “prepared” on a branch.
+
+### 2. Freeze labels in GitHub
+
+On a machine with [GitHub CLI](https://cli.github.com/) authenticated (`gh auth login`), from the repo root (checked out to **default**):
 
 ```bash
 npm run orchestration:sync-github-labels
@@ -33,11 +39,11 @@ npm run orchestration:sync-github-labels
 
 This upserts `ai-state:*` and `ai-role:*` so the documented state machine exists in GitHub.
 
-### 2. Cursor GitHub integration
+### 3. Cursor GitHub integration
 
 In Cursor, install/configure the **GitHub** integration for this repository so cloud agents/automations can access issues and PRs (permissions per [Cursor GitHub docs](https://cursor.com/docs/integrations/github)).
 
-### 3. Create the Cursor Automation
+### 4. Create the Cursor Automation
 
 In [Cursor Automations](https://cursor.com/automations):
 
@@ -49,7 +55,7 @@ In [Cursor Automations](https://cursor.com/automations):
 
 Use the starter prompt in `AI_EXECUTION_LOOP.md` (section *Cursor Cloud Agent / Automation hook*) or adapt it for your team.
 
-### 4. GitHub Actions secrets
+### 5. GitHub Actions secrets
 
 Repository → **Settings** → **Secrets and variables** → **Actions**:
 
@@ -60,34 +66,73 @@ Repository → **Settings** → **Secrets and variables** → **Actions**:
 
 If `CURSOR_AUTOMATION_WEBHOOK_URL` is unset, `.github/workflows/cursor-ready-for-ai-webhook.yml` **skips** without failing (safe for forks).
 
-### 5. Docs-only dry run
+### 6. Docs-only dry run
 
 Trigger the bridge with a **low-risk** issue:
 
 - Create a GitHub issue (small docs/governance change), **or** publish from a docs draft.
 - Set labels: **`ai-state:ready-for-ai`**, **`ai-role:docs`** (and remove conflicting `ai-state:*` if you use one-label-at-a-time).
 
-**Success criteria:**
+Validate the run with the **strict acceptance checklist** below. **Do not skip it.**
 
-- GitHub Actions workflow **Cursor ready-for-AI webhook** runs and POSTs.
-- Cursor automation starts from the webhook.
-- Agent produces a **branch / PR** (or equivalent visible work).
-- **Verify** runs on the PR; treat work as **not done** until Verify is **green**.
-
-### 6. Confirm the gate is authoritative
+### 7. Confirm the gate is authoritative
 
 After the dry run:
 
 - **Verify red** → not complete; fix or mark blocked; do not treat agent narrative as done.
 - **Verify green** → complete for that slice; update issue labels / draft `Status:` per your factory rules.
 
-### 7. Cut over operating habits
+### 8. Cut over operating habits
 
 After one successful dry run:
 
 - **Stop** using chat as the task relay (copy/paste instructions into Cursor for routine work).
 - **Start** all routine execution from **GitHub** (issue body, labels, links to repo docs).
 - Reserve chat/human discussion for **strategy**, **architecture**, **blockers**, and **exceptions**.
+
+---
+
+## Go-live dry run — strict acceptance checklist
+
+Use this after step 6. **Every item must pass** before you treat the cutover as proven. If any item fails, fix **that layer** before the next issue or before promoting backend work.
+
+### A. Preconditions (before triggering the issue)
+
+- [ ] Default branch contains `.github/workflows/cursor-ready-for-ai-webhook.yml`.
+- [ ] Default branch contains `.github/workflows/verify.yml`.
+- [ ] `CURSOR_AUTOMATION_WEBHOOK_URL` is set in repo Actions secrets (and key secret only if required).
+- [ ] Labels `ai-state:ready-for-ai` and `ai-role:docs` exist on the repo (from step 2).
+- [ ] Test issue body is **docs-only** scope (no migrations, no payment/auth behavior changes).
+
+### B. GitHub → bridge
+
+- [ ] Applying **`ai-state:ready-for-ai`** (or opening the issue with that label) triggers workflow **Cursor ready-for-AI webhook**.
+- [ ] The workflow run **succeeds** (green), not “skipped” because the URL secret is missing.
+- [ ] The workflow log shows a successful **POST** to the webhook (no 4xx/5xx from your side; if Cursor returns an error, fix URL/key/automation before continuing).
+
+### C. Cursor
+
+- [ ] Cursor shows an automation/agent **run started** for this trigger (dashboard or email—whatever your team uses).
+- [ ] The agent used **issue/PR/repo context**, not ad-hoc chat paste, to do the work.
+
+### D. Code change
+
+- [ ] A **branch** and/or **PR** exists with the docs change (visible on GitHub).
+
+### E. Authoritative gate (non-negotiable)
+
+- [ ] **Verify** (`verify.yml` / `verify:ci`) **ran** on that PR (or on the pushed branch if your policy runs Verify on PR only—then the PR must exist).
+- [ ] Verify is **green**. **If Verify is red or did not run, the dry run failed** — agent text and “PR opened” do not count.
+
+### F. After green Verify only
+
+- [ ] Update GitHub labels / issue state per your factory (e.g. done/blocked/in-progress).
+- [ ] Optionally align `docs/issues/*.md` draft `Status:` if you mirror GitHub.
+
+### G. Next issue (do not skip the queue)
+
+- [ ] First **production-style** automation issue = next **`READY_FOR_AI`** in the issue tree (e.g. Module 1 slice #4 when drafts/labels say so), **or** one more docs issue if you want extra safety.
+- [ ] Do not start risky backend work until **B–E** have passed at least once on a docs dry run.
 
 ---
 
