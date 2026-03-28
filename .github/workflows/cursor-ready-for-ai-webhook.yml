@@ -13,17 +13,29 @@
 # Creating these names (values can be empty) silences VS Code “invalid context” hints for optional vars.
 #
 # If secrets are missing, the job skips without failing (labels/CI still work).
+#
+# Re-running a failed job from an OLD run reuses that run’s commit (you will still see legacy
+# curl -f / exit 22). Use “Run workflow” (workflow_dispatch) or a new issue/label on latest main.
 
 name: Cursor ready-for-AI webhook
 
 on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to send in the webhook body (manual test from latest main)
+        required: true
+        type: string
   issues:
     types: [opened, labeled]
 
 jobs:
   notify-cursor:
+    permissions:
+      issues: read
     runs-on: ubuntu-latest
     if: >-
+      github.event_name == 'workflow_dispatch' ||
       (github.event.action == 'labeled' && github.event.label.name == 'ai-state:ready-for-ai') ||
       (github.event.action == 'opened' && contains(join(github.event.issue.labels.*.name, ','), 'ai-state:ready-for-ai'))
     steps:
@@ -48,10 +60,33 @@ jobs:
             WEBHOOK_KEY="$(trim "${BASH_REMATCH[1]}")"
           fi
 
+          export WEBHOOK_ISSUE_JSON_FILE=""
+          export WEBHOOK_GITHUB_EVENT_LABEL=""
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            ISSUE_NUM="${{ github.event.inputs.issue_number }}"
+            curl -fsSL \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUM}" \
+              -o issue-for-webhook.json
+            export WEBHOOK_ISSUE_JSON_FILE=issue-for-webhook.json
+            export WEBHOOK_GITHUB_EVENT_LABEL=workflow_dispatch
+          fi
+
           node <<'NODE'
           const fs = require("fs");
-          const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
-          const issue = event.issue;
+          const fromFile = process.env.WEBHOOK_ISSUE_JSON_FILE;
+          let issue;
+          let github_event;
+          if (fromFile) {
+            issue = JSON.parse(fs.readFileSync(fromFile, "utf8"));
+            github_event = process.env.WEBHOOK_GITHUB_EVENT_LABEL || "workflow_dispatch";
+          } else {
+            const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
+            issue = event.issue;
+            github_event = `issues.${event.action}`;
+          }
           const maxBodyChars = 100000;
           let body = issue.body == null ? "" : String(issue.body);
           const bodyTruncated = body.length > maxBodyChars;
@@ -65,14 +100,14 @@ jobs:
           const payload = {
             source: "github-actions",
             repository: process.env.GITHUB_REPOSITORY,
-            github_event: `issues.${event.action}`,
+            github_event,
             issue: {
               number: issue.number,
               title: issue.title,
               html_url: issue.html_url,
               body,
               body_truncated: bodyTruncated,
-              labels: (issue.labels || []).map((l) => l.name),
+              labels: (issue.labels || []).map((l) => (typeof l === "string" ? l : l.name)),
             },
           };
           fs.writeFileSync("payload.json", JSON.stringify(payload));
