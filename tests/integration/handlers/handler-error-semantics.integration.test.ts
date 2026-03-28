@@ -2,18 +2,26 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { PERMISSIONS } from "../../../packages/auth/permissions";
 import { createCasesRepositoryImpl } from "../../../packages/data/cases-repository.impl";
 import { createDocumentsRepositoryImpl } from "../../../packages/data/documents-repository.impl";
+import { createServiceRequestsRepositoryImpl } from "../../../packages/data/service-requests-repository.impl";
 import { createPostgresPool, getPostgresConfigFromEnv } from "../../../packages/data/postgres-config";
 import { PostgresAdapter } from "../../../packages/data/postgres-adapter";
 import { assignUserRoleTransactionalHandler } from "../../../packages/server/admin/assign-user-role.handler";
 import { getCaseByIdHandler } from "../../../packages/server/cases/get-case-by-id.handler";
 import { updateDocumentStatusHandler } from "../../../packages/server/documents/update-document-status.handler";
+import { updateServiceRequestStatusHandler } from "../../../packages/server/service-requests/update-service-request-status.handler";
 import {
   createAuthContext,
   withActiveMembership,
   withDifferentTenant,
   withPlatformPermissions,
 } from "../helpers/auth-context";
-import { seedCase, seedCompany, seedRole, seedUser } from "../helpers/seed-fixtures";
+import {
+  seedCase,
+  seedCompany,
+  seedRole,
+  seedServiceRequest,
+  seedUser,
+} from "../helpers/seed-fixtures";
 import { testDb } from "../helpers/test-db";
 
 describe("protected handler error semantics", () => {
@@ -137,5 +145,36 @@ describe("protected handler error semantics", () => {
     } finally {
       await pool.end();
     }
+  });
+
+  it("maps invalid service request transition to 400 / INVALID_SERVICE_REQUEST_TRANSITION", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    const row = await seedServiceRequest({
+      companyId: company.id,
+      serviceId: "svc-sem",
+      requestedByUserId: user.id,
+      status: "draft",
+    });
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_UPDATE],
+    );
+
+    const result = await updateServiceRequestStatusHandler(
+      { auth, serviceRequestsRepository: repo },
+      {
+        companyId: company.id,
+        serviceRequestId: row.id,
+        status: "withdrawn",
+      },
+    );
+
+    expect(result.status).toBe(400);
+    expect(result.error).toBeDefined();
+    expect(result.error?.code).toBe("INVALID_SERVICE_REQUEST_TRANSITION");
+    expect(result.error?.message).toBeDefined();
   });
 });

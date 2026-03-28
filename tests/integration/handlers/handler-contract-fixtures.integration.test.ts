@@ -2,18 +2,30 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { PERMISSIONS } from "../../../packages/auth/permissions";
 import { createCasesRepositoryImpl } from "../../../packages/data/cases-repository.impl";
 import { createDocumentsRepositoryImpl } from "../../../packages/data/documents-repository.impl";
+import { createServiceRequestsRepositoryImpl } from "../../../packages/data/service-requests-repository.impl";
 import { createPostgresPool, getPostgresConfigFromEnv } from "../../../packages/data/postgres-config";
 import { PostgresAdapter } from "../../../packages/data/postgres-adapter";
 import { assignUserRoleTransactionalHandler } from "../../../packages/server/admin/assign-user-role.handler";
 import { getCaseByIdHandler } from "../../../packages/server/cases/get-case-by-id.handler";
 import { updateDocumentStatusHandler } from "../../../packages/server/documents/update-document-status.handler";
+import { createServiceRequestDraftHandler } from "../../../packages/server/service-requests/create-service-request-draft.handler";
+import { getServiceRequestByIdHandler } from "../../../packages/server/service-requests/get-service-request-by-id.handler";
+import { listServiceRequestsByCompanyHandler } from "../../../packages/server/service-requests/list-service-requests-by-company.handler";
+import { updateServiceRequestStatusHandler } from "../../../packages/server/service-requests/update-service-request-status.handler";
 import {
   createAuthContext,
   withActiveMembership,
   withPlatformPermissions,
 } from "../helpers/auth-context";
 import { HANDLER_CONTRACT_FIXTURES } from "../helpers/handler-contract-fixtures";
-import { seedCase, seedCompany, seedDocument, seedRole, seedUser } from "../helpers/seed-fixtures";
+import {
+  seedCase,
+  seedCompany,
+  seedDocument,
+  seedRole,
+  seedServiceRequest,
+  seedUser,
+} from "../helpers/seed-fixtures";
 import { testDb } from "../helpers/test-db";
 
 describe("handler contract fixtures", () => {
@@ -199,5 +211,224 @@ describe("handler contract fixtures", () => {
     } finally {
       await pool.end();
     }
+  });
+
+  it("matches createServiceRequestDraft success contract fixture", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_CREATE],
+    );
+
+    const result = await createServiceRequestDraftHandler(
+      { auth, serviceRequestsRepository: repo },
+      { companyId: company.id, serviceId: "svc-fixture" },
+    );
+
+    expect(result.status).toBe(200);
+    expect(result.data).toBeDefined();
+    if (result.status !== 200 || !result.data) {
+      return;
+    }
+    expect(Object.keys(result.data).sort()).toEqual(
+      HANDLER_CONTRACT_FIXTURES.createServiceRequestDraft.successKeys,
+    );
+  });
+
+  it("matches createServiceRequestDraft failure contract fixture", async () => {
+    const company = await seedCompany();
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+
+    const result = await createServiceRequestDraftHandler(
+      { auth: null, serviceRequestsRepository: repo },
+      { companyId: company.id, serviceId: "svc-x" },
+    );
+
+    expect(result.status).toBe(401);
+    expect(result.error).toBeDefined();
+    if (result.status === 200 || !result.error) {
+      return;
+    }
+    expect(Object.keys(result.error).sort()).toEqual(
+      HANDLER_CONTRACT_FIXTURES.createServiceRequestDraft.failureKeys,
+    );
+  });
+
+  it("matches getServiceRequestById success contract fixture", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    const row = await seedServiceRequest({
+      companyId: company.id,
+      serviceId: "svc-g",
+      requestedByUserId: user.id,
+      status: "draft",
+    });
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_READ],
+    );
+
+    const result = await getServiceRequestByIdHandler(
+      { auth, serviceRequestsRepository: repo },
+      { companyId: company.id, serviceRequestId: row.id },
+    );
+
+    expect(result.status).toBe(200);
+    expect(result.data).toBeDefined();
+    if (result.status !== 200 || !result.data) {
+      return;
+    }
+    expect(Object.keys(result.data).sort()).toEqual(
+      HANDLER_CONTRACT_FIXTURES.getServiceRequestById.successKeys,
+    );
+  });
+
+  it("matches getServiceRequestById failure contract fixture", async () => {
+    const company = await seedCompany();
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(createAuthContext(), company.id, []);
+
+    const result = await getServiceRequestByIdHandler(
+      { auth, serviceRequestsRepository: repo },
+      {
+        companyId: company.id,
+        serviceRequestId: "00000000-0000-4000-8000-0000000000bb",
+      },
+    );
+
+    expect(result.status).toBe(403);
+    expect(result.error).toBeDefined();
+    if (result.status === 200 || !result.error) {
+      return;
+    }
+    expect(Object.keys(result.error).sort()).toEqual(
+      HANDLER_CONTRACT_FIXTURES.getServiceRequestById.failureKeys,
+    );
+  });
+
+  it("matches listServiceRequestsByCompany success contract fixture", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    await seedServiceRequest({
+      companyId: company.id,
+      serviceId: "svc-l",
+      requestedByUserId: user.id,
+      status: "draft",
+    });
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_READ],
+    );
+
+    const result = await listServiceRequestsByCompanyHandler(
+      { auth, serviceRequestsRepository: repo },
+      { companyId: company.id },
+    );
+
+    expect(result.status).toBe(200);
+    expect(result.data).toBeDefined();
+    if (result.status !== 200 || !result.data) {
+      return;
+    }
+    expect(Object.keys(result.data).sort()).toEqual(
+      HANDLER_CONTRACT_FIXTURES.listServiceRequestsByCompany.successKeys,
+    );
+  });
+
+  it("matches listServiceRequestsByCompany failure contract fixture", async () => {
+    const company = await seedCompany();
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(createAuthContext(), company.id, []);
+
+    const result = await listServiceRequestsByCompanyHandler(
+      { auth, serviceRequestsRepository: repo },
+      { companyId: company.id },
+    );
+
+    expect(result.status).toBe(403);
+    expect(result.error).toBeDefined();
+    if (result.status === 200 || !result.error) {
+      return;
+    }
+    expect(Object.keys(result.error).sort()).toEqual(
+      HANDLER_CONTRACT_FIXTURES.listServiceRequestsByCompany.failureKeys,
+    );
+  });
+
+  it("matches updateServiceRequestStatus success contract fixture", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    const row = await seedServiceRequest({
+      companyId: company.id,
+      serviceId: "svc-u",
+      requestedByUserId: user.id,
+      status: "draft",
+    });
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_UPDATE],
+    );
+
+    const result = await updateServiceRequestStatusHandler(
+      { auth, serviceRequestsRepository: repo },
+      {
+        companyId: company.id,
+        serviceRequestId: row.id,
+        status: "submitted",
+      },
+    );
+
+    expect(result.status).toBe(200);
+    expect(result.data).toBeDefined();
+    if (result.status !== 200 || !result.data) {
+      return;
+    }
+    expect(Object.keys(result.data).sort()).toEqual(
+      HANDLER_CONTRACT_FIXTURES.updateServiceRequestStatus.successKeys,
+    );
+  });
+
+  it("matches updateServiceRequestStatus failure contract fixture", async () => {
+    const company = await seedCompany();
+    const user = await seedUser();
+    const row = await seedServiceRequest({
+      companyId: company.id,
+      serviceId: "svc-u2",
+      requestedByUserId: user.id,
+      status: "draft",
+    });
+    const repo = createServiceRequestsRepositoryImpl(testDb.adapter);
+    const auth = withActiveMembership(
+      createAuthContext({ userId: user.id }),
+      company.id,
+      [PERMISSIONS.SERVICE_REQUESTS_UPDATE],
+    );
+
+    const result = await updateServiceRequestStatusHandler(
+      { auth, serviceRequestsRepository: repo },
+      {
+        companyId: company.id,
+        serviceRequestId: row.id,
+        status: "withdrawn",
+      },
+    );
+
+    expect(result.status).toBe(400);
+    expect(result.error).toBeDefined();
+    if (result.status === 200 || !result.error) {
+      return;
+    }
+    expect(Object.keys(result.error).sort()).toEqual(
+      HANDLER_CONTRACT_FIXTURES.updateServiceRequestStatus.failureKeys,
+    );
   });
 });

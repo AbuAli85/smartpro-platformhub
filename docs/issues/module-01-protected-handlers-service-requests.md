@@ -1,4 +1,4 @@
-Status: READY_FOR_AI
+Status: IN_PROGRESS
 Priority: P0
 
 # Protected handlers for service requests — CRUD and status transitions (Module 1)
