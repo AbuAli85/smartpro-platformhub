@@ -28,6 +28,7 @@ This document defines the technical architecture of the SmartPRO platform and th
 
 ### Async and Automation
 - job/queue system for notifications, retries, reminders, scheduled checks, and workflow side effects
+- notification architecture and delivery pipeline: `docs/architecture/NOTIFICATION_ARCHITECTURE.md`
 
 ### Observability
 - structured logs
