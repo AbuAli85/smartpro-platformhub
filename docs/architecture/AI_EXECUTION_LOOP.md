@@ -62,6 +62,21 @@ Use the **same states** in draft markdown (`docs/issues/*.md`) and on **GitHub**
 - `* → BLOCKED` — ambiguity, policy conflict, or external dependency.
 - `BLOCKED → READY_FOR_AI` or `IN_PROGRESS` — after resolution.
 
+### Operational slice rule (trustworthy factory)
+
+For **implementation issues** in `docs/issues/`, treat slice progress as follows:
+
+| Repo `Status:` | Meaning |
+|----------------|--------|
+| **DRAFT** | Not yet eligible to execute (dependencies unmet or scope not final). |
+| **READY_FOR_AI** | Eligible to pick up; dependencies satisfied. |
+| **IN_PROGRESS** | Work underway **or** code has landed **but** full verification is not yet proven in a real environment. |
+| **DONE** | **`npm run verify` passed** (with a valid Postgres `DATABASE_URL` where applicable), and docs/registry alignment required by the issue is satisfied. |
+
+**Critical invariant:** **Code merged or present in the workspace is not a closed slice.** A slice is operationally complete only after the **quality gate** succeeds in an environment that can run migrations and integration tests. Until then, keep **`IN_PROGRESS`** and do not promote dependent issues from **DRAFT** to **READY_FOR_AI**.
+
+`DONE` in a draft file is equivalent to **COMPLETE** in the table above (GitHub may still use `ai-state:complete`).
+
 ---
 
 ## 4. GitHub labels (recommended)

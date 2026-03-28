@@ -2,7 +2,7 @@
 
 Markdown drafts for GitHub issues. Each file should:
 
-- Start with `Status:` matching the [issue state machine](../architecture/AI_EXECUTION_LOOP.md#issue-state-machine), e.g. `READY_FOR_AI`, `IN_PROGRESS`, `COMPLETE`, `BLOCKED`
+- Start with `Status:` matching the [issue state machine](../architecture/AI_EXECUTION_LOOP.md#issue-state-machine) and [operational slice rule](../architecture/AI_EXECUTION_LOOP.md#operational-slice-rule-trustworthy-factory), e.g. `DRAFT`, `READY_FOR_AI`, `IN_PROGRESS`, `DONE`, `BLOCKED` (use **`DONE`** only after `npm run verify` passes with Postgres where required)
 - Include `Priority: P0` | `P1` | `P2` as needed
 - Use a single `# Title` line for the issue title (used by `scripts/publish-issues.ts`)
 
