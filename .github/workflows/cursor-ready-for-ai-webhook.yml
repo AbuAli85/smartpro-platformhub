@@ -1,0 +1,57 @@
+# Notifies a Cursor Automation (webhook trigger) when an issue is ready for cloud agents.
+# Cursor's built-in GitHub triggers do not include "issue labeled"; this workflow bridges
+# GitHub (source of truth) → Cursor webhook → cloud agent run.
+#
+# Repository secrets (Settings → Secrets → Actions):
+#   CURSOR_AUTOMATION_WEBHOOK_URL — from the automation's Webhook trigger after save
+#   CURSOR_AUTOMATION_WEBHOOK_KEY — optional; sent as Authorization: Bearer <key> if set
+#
+# If secrets are missing, the job skips without failing (labels/CI still work).
+
+name: Cursor ready-for-AI webhook
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  notify-cursor:
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event.action == 'labeled' && github.event.label.name == 'ai-state:ready-for-ai') ||
+      (github.event.action == 'opened' && contains(join(github.event.issue.labels.*.name, ','), 'ai-state:ready-for-ai'))
+    steps:
+      - name: POST webhook payload
+        env:
+          WEBHOOK_URL: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_URL }}
+          WEBHOOK_KEY: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_KEY }}
+        run: |
+          if [ -z "${WEBHOOK_URL}" ]; then
+            echo "CURSOR_AUTOMATION_WEBHOOK_URL not configured; skipping Cursor notification."
+            exit 0
+          fi
+
+          node <<'NODE'
+          const fs = require("fs");
+          const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
+          const issue = event.issue;
+          const payload = {
+            source: "github-actions",
+            repository: process.env.GITHUB_REPOSITORY,
+            github_event: `issues.${event.action}`,
+            issue: {
+              number: issue.number,
+              title: issue.title,
+              html_url: issue.html_url,
+              body: issue.body,
+              labels: (issue.labels || []).map((l) => l.name),
+            },
+          };
+          fs.writeFileSync("payload.json", JSON.stringify(payload));
+          NODE
+
+          CURL_ARGS=(-sS -f -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" --data-binary @payload.json)
+          if [ -n "${WEBHOOK_KEY}" ]; then
+            CURL_ARGS+=(-H "Authorization: Bearer ${WEBHOOK_KEY}")
+          fi
+          curl "${CURL_ARGS[@]}"
