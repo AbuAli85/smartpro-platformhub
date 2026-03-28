@@ -1,4 +1,4 @@
-Status: IN_PROGRESS
+Status: DONE
 Priority: P0
 
 # Add service_requests table and tenant-scoped repository (Module 1)
@@ -52,4 +52,4 @@ Landed in workspace:
 - `tests/integration/helpers/seed-fixtures.ts` (`seedServiceRequest`)
 - `tests/integration/helpers/test-db.ts` and `scripts/reset-test-db.ts` (truncate `service_requests`)
 
-**Formal completion:** set `Status: DONE` after `npm run verify` passes with `DATABASE_URL` configured (migration + integration tests).
+**Verified:** GitHub Actions Verify on PR #12 (run `23683511138`, 2026-03-28): `verify:ci` green; migrations through `20260327_006_service_requests.sql`; integration suite 119 tests passed.

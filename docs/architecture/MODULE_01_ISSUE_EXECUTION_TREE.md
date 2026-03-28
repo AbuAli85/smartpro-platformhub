@@ -12,9 +12,9 @@ Ordered **AI-ready work** for Module 1 (booking / service request lifecycle), wi
 
 | # | Issue file (draft) | Primary role | Initial Status | Dependency |
 |---|-------------------|---------------|----------------|------------|
-| 1 | `module-01-add-service-requests-table-and-repository.md` | Backend | **IN_PROGRESS** (implementation landed; close with `DONE` after verify) | none |
-| 2 | `module-01-docs-align-service-request-lifecycle.md` | Docs | **IN_PROGRESS** (docs landed; close with `DONE` after same verify as #1) | none (can parallel #1) |
-| 3 | `module-01-protected-handlers-service-requests.md` | Backend | **DRAFT** (→ `READY_FOR_AI` only after #1 is `DONE` / verify green) | after #1 closed operationally |
+| 1 | `module-01-add-service-requests-table-and-repository.md` | Backend | **DONE** (closed with PR #12 Verify run `23683511138`) | none |
+| 2 | `module-01-docs-align-service-request-lifecycle.md` | Docs | **DONE** (same verify run as #1) | none (can parallel #1) |
+| 3 | `module-01-protected-handlers-service-requests.md` | Backend | **READY_FOR_AI** | after #1 + #2 verified (met) |
 | 4 | `module-01-link-cases-to-service-requests.md` | Backend | DRAFT | after #1; coordinates with #3 |
 | 5 | `module-01-integration-tests-service-request-flows.md` | QA | DRAFT | after #3 (expand as handlers land) |
 

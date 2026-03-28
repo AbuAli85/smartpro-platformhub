@@ -1,4 +1,4 @@
-Status: IN_PROGRESS
+Status: DONE
 Priority: P0
 
 # Align domain and architecture docs for ServiceRequest lifecycle (Module 1)
@@ -26,6 +26,6 @@ Make **ServiceRequest** and Module 1 slices discoverable from existing architect
 - `docs/architecture/MODULE_01_BOOKING_SERVICE_REQUEST_LIFECYCLE.md`
 - `docs/architecture/MODULE_01_ISSUE_EXECUTION_TREE.md`
 
-## Implementation note
+## Verification note
 
-Documentation alignment landed in-repo (see git history on this branch). **`Status: DONE` requires `npm run verify` with a configured `DATABASE_URL`** (migrations + integration tests). This agent environment had no Postgres URL; run verify locally or in CI, then set `Status: DONE`.
+Same authoritative gate as slice #1: GitHub Actions Verify on PR #12 (run `23683511138`) — `verify:ci` green with Postgres; docs slice closed jointly per `MODULE_01_ISSUE_EXECUTION_TREE.md`.

@@ -1,4 +1,4 @@
-Status: DRAFT
+Status: READY_FOR_AI
 Priority: P0
 
 # Protected handlers for service requests — CRUD and status transitions (Module 1)
@@ -7,7 +7,7 @@ ai-role: backend
 
 ## Promotion
 
-Keep **`DRAFT`** until `module-01-add-service-requests-table-and-repository.md` is **`DONE`** (`npm run verify` green with Postgres). Then set this issue to **`READY_FOR_AI`** for execution. This avoids picking up handler work before slice #1 is operationally closed.
+**Unblocked:** `module-01-add-service-requests-table-and-repository.md` is **`DONE`** (Verify on PR #12, run `23683511138`). This issue is **`READY_FOR_AI`** for execution.
 
 ## Objective
 
@@ -21,7 +21,7 @@ Expose **ServiceRequest** through protected API handlers with auth, RBAC (`servi
 
 ## Dependencies
 
-- Repository + migration from `module-01-add-service-requests-table-and-repository.md` must be applied; mark that issue `DONE` after `npm run verify` before merging handler work.
+- Repository + migration from `module-01-add-service-requests-table-and-repository.md` — **satisfied** (issue **`DONE`**, Verify green on PR #12).
 
 ## Acceptance Criteria
 
@@ -33,3 +33,16 @@ Expose **ServiceRequest** through protected API handlers with auth, RBAC (`servi
 
 - `docs/architecture/MODULE_01_BOOKING_SERVICE_REQUEST_LIFECYCLE.md`
 - `docs/testing/PROTECTED_HANDLER_GOVERNANCE_INDEX.md`
+
+## Likely touch points (execution prep)
+
+Mirror existing protected handlers under `packages/server/cases/` and `packages/server/documents/`:
+
+- **Handlers + core logic:** new `packages/server/service-requests/*.ts` (e.g. create draft, get by id, list by company, update status) using `createServiceRequestsRepositoryImpl` / `ServiceRequestsRepository` from `packages/data/`.
+- **Permissions:** `packages/auth/permissions.ts` — `service_requests:create|read|update` (already defined; wire in guards like other handlers).
+- **Contract governance (update together):**
+  - `tests/integration/helpers/api-contract-registry.ts`
+  - `tests/integration/helpers/handler-contract-fixtures.ts`
+  - `tests/integration/helpers/protected-handler-inventory.ts`, `governance-assets.ts`, `governed-handler-doc-expectations.ts`, `protected-handler-candidates.ts`, `governance-policy-expectations.ts` (per existing patterns for governed handlers)
+  - New `tests/integration/handlers/*.service-request*.integration.test.ts` files following `get-case-by-id.handler.integration.test.ts` and the contract suites (`handler-result-contract`, `handler-error-semantics`, `handler-success-payload`, `response-boundary-hygiene`, `handler-contract-fixtures`).
+- **Examples (if repo uses them):** `packages/server/examples/` — add parity examples for new handlers.
