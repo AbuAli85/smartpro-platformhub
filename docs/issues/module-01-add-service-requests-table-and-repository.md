@@ -5,6 +5,12 @@ Priority: P0
 
 ai-role: backend
 
+## Operational definition
+
+- **Implementation in repo** can be complete while this issue stays **`IN_PROGRESS`**.
+- The issue is **`DONE` only after `npm run verify` passes** in an environment with a real `DATABASE_URL` (migrations + test DB + integration suite + existing gates).
+- Do not promote dependent Module 1 issues (e.g. protected handlers) to **`READY_FOR_AI`** until this issue is **`DONE`** by that rule.
+
 ## Objective
 
 Introduce persistent **ServiceRequest** storage aligned with `docs/core/DOMAIN_MODEL.md`, closing the gap where RBAC already defines `service_requests:*` permissions but no table exists.

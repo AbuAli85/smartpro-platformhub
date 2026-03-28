@@ -1,9 +1,13 @@
-Status: READY_FOR_AI
+Status: DRAFT
 Priority: P0
 
 # Protected handlers for service requests — CRUD and status transitions (Module 1)
 
 ai-role: backend
+
+## Promotion
+
+Keep **`DRAFT`** until `module-01-add-service-requests-table-and-repository.md` is **`DONE`** (`npm run verify` green with Postgres). Then set this issue to **`READY_FOR_AI`** for execution. This avoids picking up handler work before slice #1 is operationally closed.
 
 ## Objective
 
