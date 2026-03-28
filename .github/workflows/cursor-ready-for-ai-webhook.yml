@@ -4,7 +4,14 @@
 #
 # Repository secrets (Settings → Secrets → Actions):
 #   CURSOR_AUTOMATION_WEBHOOK_URL — from the automation's Webhook trigger after save
-#   CURSOR_AUTOMATION_WEBHOOK_KEY — optional; sent as Authorization: Bearer <key> if set
+#   CURSOR_AUTOMATION_WEBHOOK_KEY — optional; credential value only (not the header name)
+#
+# Repository variables (Settings → Secrets and variables → Actions → Variables), optional:
+#   CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_NAME — must match Cursor "Generate auth header" exactly
+#     for the header name, e.g. X-API-Key or X-Cursor-Signature. If unset, default is
+#     Authorization: Bearer <key> (Cursor case "Authorization: Bearer …").
+#   CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_PREFIX — only when HEADER_NAME is Authorization;
+#     text before the key (default "Bearer "). Rarely needed.
 #
 # If secrets are missing, the job skips without failing (labels/CI still work).
 
@@ -25,6 +32,8 @@ jobs:
         env:
           WEBHOOK_URL: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_URL }}
           WEBHOOK_KEY: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_KEY }}
+          AUTH_HEADER_NAME: ${{ vars.CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_NAME }}
+          AUTH_HEADER_PREFIX: ${{ vars.CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_PREFIX }}
         run: |
           if [ -z "${WEBHOOK_URL}" ]; then
             echo "CURSOR_AUTOMATION_WEBHOOK_URL not configured; skipping Cursor notification."
@@ -52,6 +61,13 @@ jobs:
 
           CURL_ARGS=(-sS -f -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" --data-binary @payload.json)
           if [ -n "${WEBHOOK_KEY}" ]; then
-            CURL_ARGS+=(-H "Authorization: Bearer ${WEBHOOK_KEY}")
+            if [ -z "${AUTH_HEADER_NAME}" ]; then
+              CURL_ARGS+=(-H "Authorization: Bearer ${WEBHOOK_KEY}")
+            elif [ "${AUTH_HEADER_NAME}" = "Authorization" ]; then
+              prefix="${AUTH_HEADER_PREFIX:-Bearer }"
+              CURL_ARGS+=(-H "Authorization: ${prefix}${WEBHOOK_KEY}")
+            else
+              CURL_ARGS+=(-H "${AUTH_HEADER_NAME}: ${WEBHOOK_KEY}")
+            fi
           fi
           curl "${CURL_ARGS[@]}"
