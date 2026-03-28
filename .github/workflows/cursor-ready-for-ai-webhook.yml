@@ -40,6 +40,14 @@ jobs:
             exit 0
           fi
 
+          # Trim secrets (paste errors); strip accidental "Bearer " if the whole line was saved as the secret.
+          trim() { printf '%s' "$1" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'; }
+          WEBHOOK_URL="$(trim "${WEBHOOK_URL}")"
+          WEBHOOK_KEY="$(trim "${WEBHOOK_KEY}")"
+          if [ -n "${WEBHOOK_KEY}" ] && [[ "${WEBHOOK_KEY}" =~ ^[Bb][Ee][Aa][Rr][Ee][Rr][[:space:]]+(.+)$ ]]; then
+            WEBHOOK_KEY="$(trim "${BASH_REMATCH[1]}")"
+          fi
+
           node <<'NODE'
           const fs = require("fs");
           const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
@@ -59,7 +67,7 @@ jobs:
           fs.writeFileSync("payload.json", JSON.stringify(payload));
           NODE
 
-          CURL_ARGS=(-sS -f -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" --data-binary @payload.json)
+          CURL_ARGS=(-sS -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" --data-binary @payload.json)
           if [ -n "${WEBHOOK_KEY}" ]; then
             if [ -z "${AUTH_HEADER_NAME}" ]; then
               CURL_ARGS+=(-H "Authorization: Bearer ${WEBHOOK_KEY}")
@@ -69,5 +77,21 @@ jobs:
             else
               CURL_ARGS+=(-H "${AUTH_HEADER_NAME}: ${WEBHOOK_KEY}")
             fi
+          else
+            echo "::warning::CURSOR_AUTOMATION_WEBHOOK_KEY is empty. Authenticated Cursor webhooks will return 401 until you add the token from Generate auth header (value only, not the word Bearer)."
           fi
-          curl "${CURL_ARGS[@]}"
+
+          http_code="$(curl -sS -o /tmp/cursor_webhook_resp.txt -w "%{http_code}" "${CURL_ARGS[@]}")"
+          if [ "${http_code}" -ge 200 ] && [ "${http_code}" -lt 300 ]; then
+            echo "Cursor webhook accepted (HTTP ${http_code})."
+            exit 0
+          fi
+          echo "Cursor webhook failed with HTTP ${http_code}."
+          if [ "${http_code}" = "401" ]; then
+            echo "401 usually means: wrong or revoked token, token included Bearer twice, or URL is for a different automation. In GitHub, set CURSOR_AUTOMATION_WEBHOOK_KEY to the exact token after Bearer from Cursor only. Regenerate in Cursor if unsure."
+          fi
+          if [ -s /tmp/cursor_webhook_resp.txt ]; then
+            head -c 800 /tmp/cursor_webhook_resp.txt | tr -d '\r' || true
+            echo
+          fi
+          exit 1
