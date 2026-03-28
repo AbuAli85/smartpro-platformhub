@@ -1,4 +1,4 @@
-Status: READY_FOR_AI
+Status: IN_PROGRESS
 Priority: P0
 
 # Add service_requests table and tenant-scoped repository (Module 1)
@@ -34,3 +34,16 @@ Introduce persistent **ServiceRequest** storage aligned with `docs/core/DOMAIN_M
 - `docs/architecture/MODULE_01_BOOKING_SERVICE_REQUEST_LIFECYCLE.md`
 - `docs/architecture/MODULE_01_ISSUE_EXECUTION_TREE.md`
 - `docs/core/DOMAIN_MODEL.md` (ServiceRequest)
+
+## Implementation status (repo)
+
+Landed in workspace:
+
+- `database/migrations/20260327_006_service_requests.sql`
+- `packages/data/service-requests-repository.ts`
+- `packages/data/service-requests-repository.impl.ts`
+- `tests/integration/service-requests-repository.integration.test.ts`
+- `tests/integration/helpers/seed-fixtures.ts` (`seedServiceRequest`)
+- `tests/integration/helpers/test-db.ts` and `scripts/reset-test-db.ts` (truncate `service_requests`)
+
+**Formal completion:** set `Status: DONE` after `npm run verify` passes with `DATABASE_URL` configured (migration + integration tests).

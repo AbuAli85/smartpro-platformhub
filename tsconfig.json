@@ -9,6 +9,11 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["scripts/**/*.ts", "packages/**/*.ts", "tests/**/*.ts"],
+  "include": [
+    "scripts/**/*.ts",
+    "packages/**/*.ts",
+    "tests/**/*.ts",
+    "vitest.config.ts"
+  ],
   "exclude": ["packages/auth/examples/**"]
 }

@@ -95,36 +95,71 @@ export async function seedUserRole(params: {
   return result.rows[0];
 }
 
-export async function seedCase(params: {
+export async function seedServiceRequest(params: {
   companyId: string;
+  serviceId: string;
+  requestedByUserId: string;
+  status: string;
+  submittedAt?: string | null;
+}) {
+  const result = await testDb.pool.query(
+    `
+    insert into public.service_requests (
+      company_id,
+      service_id,
+      requested_by_user_id,
+      status,
+      submitted_at
+    )
+    values ($1, $2, $3, $4, $5)
+    returning id, company_id, service_id, requested_by_user_id, status, submitted_at
+    `,
+    [
+      params.companyId,
+      params.serviceId,
+      params.requestedByUserId,
+      params.status,
+      params.submittedAt ?? null,
+    ],
+  );
+
+  return result.rows[0];
+}
+
+export async function seedCase(params: {
+  companyId?: string;
   serviceId: string;
   status: string;
 }) {
+  const companyId = params.companyId ?? (await seedCompany()).id;
+
   const result = await testDb.pool.query(
     `
     insert into public.cases (company_id, service_id, status)
     values ($1, $2, $3)
     returning id, company_id, service_id, status
     `,
-    [params.companyId, params.serviceId, params.status],
+    [companyId, params.serviceId, params.status],
   );
 
   return result.rows[0];
 }
 
 export async function seedDocument(params: {
-  companyId: string;
+  companyId?: string;
   caseId?: string | null;
   status: string;
   storagePath: string;
 }) {
+  const companyId = params.companyId ?? (await seedCompany()).id;
+
   const result = await testDb.pool.query(
     `
     insert into public.documents (company_id, case_id, status, storage_path)
     values ($1, $2, $3, $4)
     returning id, company_id, case_id, status, storage_path
     `,
-    [params.companyId, params.caseId ?? null, params.status, params.storagePath],
+    [companyId, params.caseId ?? null, params.status, params.storagePath],
   );
 
   return result.rows[0];

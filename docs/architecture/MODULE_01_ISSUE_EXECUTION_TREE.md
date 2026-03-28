@@ -12,9 +12,9 @@ Ordered **AI-ready work** for Module 1 (booking / service request lifecycle), wi
 
 | # | Issue file (draft) | Primary role | Initial Status | Dependency |
 |---|-------------------|---------------|----------------|------------|
-| 1 | `module-01-add-service-requests-table-and-repository.md` | Backend | **READY_FOR_AI** | none |
+| 1 | `module-01-add-service-requests-table-and-repository.md` | Backend | **IN_PROGRESS** (implementation landed; close with `DONE` after verify) | none |
 | 2 | `module-01-docs-align-service-request-lifecycle.md` | Docs | **READY_FOR_AI** | none (can parallel #1) |
-| 3 | `module-01-protected-handlers-service-requests.md` | Backend | DRAFT | after #1 |
+| 3 | `module-01-protected-handlers-service-requests.md` | Backend | **READY_FOR_AI** | after #1 schema/repo |
 | 4 | `module-01-link-cases-to-service-requests.md` | Backend | DRAFT | after #1; coordinates with #3 |
 | 5 | `module-01-integration-tests-service-request-flows.md` | QA | DRAFT | after #3 (expand as handlers land) |
 

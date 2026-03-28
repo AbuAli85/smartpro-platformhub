@@ -1,4 +1,4 @@
-Status: DRAFT
+Status: READY_FOR_AI
 Priority: P0
 
 # Protected handlers for service requests — CRUD and status transitions (Module 1)
@@ -17,7 +17,7 @@ Expose **ServiceRequest** through protected API handlers with auth, RBAC (`servi
 
 ## Dependencies
 
-- Complete `module-01-add-service-requests-table-and-repository.md` first.
+- Repository + migration from `module-01-add-service-requests-table-and-repository.md` must be applied; mark that issue `DONE` after `npm run verify` before merging handler work.
 
 ## Acceptance Criteria
 

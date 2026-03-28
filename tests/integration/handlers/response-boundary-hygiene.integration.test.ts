@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { PERMISSIONS } from "../../../packages/auth/permissions";
 import { createCasesRepositoryImpl } from "../../../packages/data/cases-repository.impl";
 import { createDocumentsRepositoryImpl } from "../../../packages/data/documents-repository.impl";
-import { createPostgresPool, getPostgresConfigFromEnv } from "../../../packages/data/postgres-config";
-import { PostgresAdapter } from "../../../packages/data/postgres-adapter";
 import { assignUserRoleTransactionalHandler } from "../../../packages/server/admin/assign-user-role.handler";
 import { getCaseByIdHandler } from "../../../packages/server/cases/get-case-by-id.handler";
 import { updateDocumentStatusHandler } from "../../../packages/server/documents/update-document-status.handler";
@@ -150,34 +148,27 @@ describe("response boundary hygiene", () => {
       scopeType: "company",
     });
 
-    const pool = createPostgresPool(getPostgresConfigFromEnv());
-    const db = new PostgresAdapter(pool);
+    const result = await assignUserRoleTransactionalHandler(
+      {
+        auth: withPlatformPermissions(createAuthContext({ userId: actor.id }), [
+          PERMISSIONS.ROLES_MANAGE,
+        ]),
+        db: testDb.adapter,
+      },
+      {
+        targetUserId: target.id,
+        roleId: companyRole.id,
+        companyId: company.id,
+      },
+    );
 
-    try {
-      const result = await assignUserRoleTransactionalHandler(
-        {
-          auth: withPlatformPermissions(createAuthContext({ userId: actor.id }), [
-            PERMISSIONS.ROLES_MANAGE,
-          ]),
-          db,
-        },
-        {
-          targetUserId: target.id,
-          roleId: companyRole.id,
-          companyId: company.id,
-        },
-      );
-
-      expect(result.status).toBe(200);
-      if (result.status !== 200 || !result.data) {
-        throw new Error("expected success");
-      }
-
-      expectCleanTopLevelResponse(result);
-      expectCleanSuccessPayload(result.data);
-    } finally {
-      await pool.end();
+    expect(result.status).toBe(200);
+    if (result.status !== 200 || !result.data) {
+      throw new Error("expected success");
     }
+
+    expectCleanTopLevelResponse(result);
+    expectCleanSuccessPayload(result.data);
   });
 
   it("does not leak internal implementation details in failure responses", async () => {

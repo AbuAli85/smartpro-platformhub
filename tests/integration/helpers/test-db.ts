@@ -18,6 +18,7 @@ export const testDb = (() => {
           public.audit_events,
           public.documents,
           public.cases,
+          public.service_requests,
           public.user_roles,
           public.role_permissions,
           public.permissions,
