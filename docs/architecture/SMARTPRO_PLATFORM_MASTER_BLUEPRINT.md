@@ -199,6 +199,8 @@ The platform is “ready” when:
 |----------|-----|
 | `RACI.md` | Accountable/responsible roles; **release authority** |
 | `OWNERSHIP_MAP.md` | Named owners per concern; escalation |
+| `GOVERNED_EXECUTION_BINDING.md` | **Bind implementation repo:** CODEOWNERS, branch protection, required checks, ADR pointer, readiness gate |
+| `templates/business-services-hub-CODEOWNERS` | Copy to app repo `.github/CODEOWNERS` (after editing teams/paths) |
 
 ### AI control (`docs/ai/`)
 

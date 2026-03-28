@@ -41,19 +41,27 @@ Legend: **Y** = required for production module, **P** = planned, **—** = not a
 
 ---
 
-## Implementation traceability (fill per module)
+## Implementation traceability (populate with real paths)
 
-When a **module** is declared “in progress” or “done,” add a row:
+**Rule:** each row must be true in `business-services-hub` (adjust paths). Until paths are filled, mark **TBD** and assign an owner to complete.
 
-| Module / domain | Governance doc | Implementation area (repo path) | Key tests | Runbook | Owner |
-|-----------------|----------------|-----------------------------------|-----------|---------|-------|
-| *example: service requests* | `MODULE_01_*` | `src/...` | `*.integration.test.ts` | *TBD* | *name* |
-| | | | | | |
+| Module / domain | Governance doc (this repo) | Implementation area (path in app repo) | Key tests | Runbook | Owner |
+|-----------------|----------------------------|----------------------------------------|-----------|---------|-------|
+| Auth / session | `docs/architecture/RBAC_MODEL.md`, `AUDIT_LOGGING_PATTERN.md` | *TBD e.g. `src/server/auth/*`* | *TBD `*.integration.test.ts`* | `TENANT_ACCESS_SECURITY_EVENT.md` | *assign* |
+| RBAC / roles | `RBAC_MODEL.md` | *TBD* | *TBD RBAC / tenant tests* | same | *assign* |
+| Bookings / workflow / service requests | `MODULE_01_BOOKING_SERVICE_REQUEST_LIFECYCLE.md` | *TBD* | *TBD workflow / handler contracts* | `FAILED_JOBS_AND_RETRY.md` | *assign* |
+| Payments / billing / PSP webhooks | `AUDIT_LOGGING_PATTERN.md`, constitution | *TBD* | *TBD payment + webhook idempotency* | `PAYMENT_RECONCILIATION.md`, `WEBHOOK_FAILURES.md` | *assign* |
+| Notifications | `NOTIFICATION_ARCHITECTURE.md` | *TBD* | *TBD delivery / fan-out* | `FAILED_JOBS_AND_RETRY.md` | *assign* |
+| Documents / verification | domain + module docs | *TBD* | *TBD upload / access* | *TBD* | *assign* |
+| Admin / tenant controls | `RBAC_MODEL.md`, `TENANT_ISOLATION_MODEL.md` | *TBD* | *TBD admin boundary tests* | `TENANT_ACCESS_SECURITY_EVENT.md` | *assign* |
+
+Add rows for new modules; remove TBD as the implementation repo is wired.
 
 ---
 
 ## Related
 
+- `docs/operations/GOVERNED_EXECUTION_BINDING.md`
 - `docs/release/PRODUCTION_READINESS_GATE.md`
 - `docs/testing/MERGE_BLOCKING_CONTRACT_GOVERNANCE.md`
 - `docs/architecture/SMARTPRO_PLATFORM_MASTER_BLUEPRINT.md`

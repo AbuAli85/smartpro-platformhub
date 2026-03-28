@@ -26,6 +26,8 @@ Update this file when headcount or roles change.
 
 ## Implementation repo (application)
 
+**Binding checklist:** `GOVERNED_EXECUTION_BINDING.md` (CODEOWNERS template, branch protection, required checks).
+
 | Concern | Primary owner | Backup | Notes |
 |---------|---------------|--------|-------|
 | CI / merge gates | *assign* | *assign* | Must satisfy `ENFORCEMENT_MATRIX.md` |

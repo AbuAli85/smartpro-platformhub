@@ -1,0 +1,51 @@
+# Copy this file to: business-services-hub/.github/CODEOWNERS
+# Replace @YOUR_ORG/... with GitHub usernames or teams. Adjust paths to match your repo layout.
+
+# Default owner for anything not matched below
+* @YOUR_ORG/default-reviewers
+
+# Governance-sensitive: GitHub Actions and deploy definitions
+/.github/workflows/ @YOUR_ORG/platform
+/.github/CODEOWNERS @YOUR_ORG/platform
+
+# Auth, session, identity
+**/auth/** @YOUR_ORG/security @YOUR_ORG/backend
+**/session/** @YOUR_ORG/security @YOUR_ORG/backend
+**/middleware/** @YOUR_ORG/backend
+
+# RBAC, permissions, roles
+**/rbac/** @YOUR_ORG/security @YOUR_ORG/platform
+**/permissions/** @YOUR_ORG/security @YOUR_ORG/backend
+**/roles/** @YOUR_ORG/security @YOUR_ORG/backend
+
+# Billing, payments, invoices, webhooks from PSP
+**/billing/** @YOUR_ORG/finance-tech @YOUR_ORG/backend
+**/payments/** @YOUR_ORG/finance-tech @YOUR_ORG/backend
+**/invoices/** @YOUR_ORG/finance-tech @YOUR_ORG/backend
+
+# Workflow / booking / case engine (canonical transitions)
+**/workflows/** @YOUR_ORG/platform @YOUR_ORG/backend
+**/booking/** @YOUR_ORG/product-engineering @YOUR_ORG/backend
+**/bookings/** @YOUR_ORG/product-engineering @YOUR_ORG/backend
+**/cases/** @YOUR_ORG/product-engineering @YOUR_ORG/backend
+**/service-requests/** @YOUR_ORG/product-engineering @YOUR_ORG/backend
+
+# Notifications
+**/notifications/** @YOUR_ORG/backend @YOUR_ORG/product-engineering
+
+# Documents / uploads / verification
+**/documents/** @YOUR_ORG/backend
+**/uploads/** @YOUR_ORG/backend
+**/verification/** @YOUR_ORG/backend
+
+# Admin, tenant controls, impersonation
+**/admin/** @YOUR_ORG/platform @YOUR_ORG/backend
+**/tenant/** @YOUR_ORG/platform @YOUR_ORG/backend
+
+# Database migrations (all must be reviewed)
+**/migrations/** @YOUR_ORG/platform @YOUR_ORG/backend
+**/supabase/migrations/** @YOUR_ORG/platform @YOUR_ORG/backend
+
+# Infrastructure as code (if present)
+/infra/** @YOUR_ORG/platform
+/terraform/** @YOUR_ORG/platform
