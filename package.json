@@ -9,7 +9,7 @@
     "reset-test-db": "npx --yes tsx scripts/reset-test-db.ts",
     "lint": "eslint . --ext .ts",
     "typecheck": "tsc --noEmit",
-    "test:integration": "vitest run",
+    "test:integration": "vitest run --maxWorkers=1",
     "review:protected-handlers": "npx --yes tsx scripts/print-protected-handler-exclusion-summary.ts",
     "review:protected-handlers:json": "npx --yes tsx scripts/print-protected-handler-exclusion-summary-json.ts",
     "review:governance-health": "npx --yes tsx scripts/print-protected-handler-governance-health.ts",
