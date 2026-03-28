@@ -52,6 +52,16 @@ jobs:
           const fs = require("fs");
           const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
           const issue = event.issue;
+          const maxBodyChars = 100000;
+          let body = issue.body == null ? "" : String(issue.body);
+          const bodyTruncated = body.length > maxBodyChars;
+          if (bodyTruncated) {
+            body =
+              body.slice(0, maxBodyChars) +
+              "\n\n[truncated by smartpro-platformhub webhook: issue body exceeded " +
+              maxBodyChars +
+              " characters]";
+          }
           const payload = {
             source: "github-actions",
             repository: process.env.GITHUB_REPOSITORY,
@@ -60,14 +70,15 @@ jobs:
               number: issue.number,
               title: issue.title,
               html_url: issue.html_url,
-              body: issue.body,
+              body,
+              body_truncated: bodyTruncated,
               labels: (issue.labels || []).map((l) => l.name),
             },
           };
           fs.writeFileSync("payload.json", JSON.stringify(payload));
           NODE
 
-          CURL_ARGS=(-sS -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" --data-binary @payload.json)
+          CURL_ARGS=(-sS -X POST "$WEBHOOK_URL" -H "Content-Type: application/json; charset=utf-8" -H "Accept: application/json" --data-binary @payload.json)
           if [ -n "${WEBHOOK_KEY}" ]; then
             if [ -z "${AUTH_HEADER_NAME}" ]; then
               CURL_ARGS+=(-H "Authorization: Bearer ${WEBHOOK_KEY}")
@@ -89,6 +100,9 @@ jobs:
           echo "Cursor webhook failed with HTTP ${http_code}."
           if [ "${http_code}" = "401" ]; then
             echo "401 usually means: wrong or revoked token, token included Bearer twice, or URL is for a different automation. In GitHub, set CURSOR_AUTOMATION_WEBHOOK_KEY to the exact token after Bearer from Cursor only. Regenerate in Cursor if unsure."
+          fi
+          if [ "${http_code}" = "400" ]; then
+            echo "400 means Cursor rejected the request body or URL. Check: (1) Webhook trigger in Cursor has no required custom input fields you are not sending—remove them or add matching JSON keys to this workflow. (2) Re-copy the webhook URL after Save. (3) After pushing this workflow, re-run to read the response body printed below."
           fi
           if [ -s /tmp/cursor_webhook_resp.txt ]; then
             head -c 800 /tmp/cursor_webhook_resp.txt | tr -d '\r' || true
