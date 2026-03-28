@@ -32,6 +32,7 @@ on:
 jobs:
   notify-cursor:
     permissions:
+      contents: read
       issues: read
     runs-on: ubuntu-latest
     if: >-
@@ -41,6 +42,7 @@ jobs:
     steps:
       - name: POST webhook payload
         env:
+          GH_API_TOKEN: ${{ github.token }}
           WEBHOOK_URL: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_URL }}
           WEBHOOK_KEY: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_KEY }}
           # github/vscode-github-actions#222 — extension may warn until vars exist; runtime treats missing vars as empty.
@@ -64,12 +66,21 @@ jobs:
           export WEBHOOK_GITHUB_EVENT_LABEL=""
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             ISSUE_NUM="${{ github.event.inputs.issue_number }}"
-            curl -fsSL \
-              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            # Do not use curl -f here: GitHub API 401/403/404 would become exit 22 and look like a Cursor failure.
+            gh_code="$(curl -sS -o issue-for-webhook.json -w "%{http_code}" \
+              -H "Authorization: Bearer ${GH_API_TOKEN}" \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUM}" \
-              -o issue-for-webhook.json
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUM}")"
+            if [ "${gh_code}" != "200" ]; then
+              echo "GitHub REST API failed (HTTP ${gh_code}) while loading issue #${ISSUE_NUM} for workflow_dispatch."
+              echo "This is not the Cursor webhook yet — fix repo permissions (job needs issues: read) or the issue number."
+              if [ -s issue-for-webhook.json ]; then
+                head -c 800 issue-for-webhook.json | tr -d '\r' || true
+                echo
+              fi
+              exit 1
+            fi
             export WEBHOOK_ISSUE_JSON_FILE=issue-for-webhook.json
             export WEBHOOK_GITHUB_EVENT_LABEL=workflow_dispatch
           fi
