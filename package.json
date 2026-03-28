@@ -4,6 +4,7 @@
   "description": "SmartPRO platform — scripts and packages",
   "scripts": {
     "orchestration:list-ready": "npx --yes tsx scripts/list-ready-for-ai-issues.ts",
+    "orchestration:sync-github-labels": "npx --yes tsx scripts/sync-github-labels.ts",
     "publish-issues": "npx --yes tsx scripts/publish-issues.ts",
     "migrate": "npx --yes tsx scripts/run-migrations.ts",
     "reset-test-db": "npx --yes tsx scripts/reset-test-db.ts",
