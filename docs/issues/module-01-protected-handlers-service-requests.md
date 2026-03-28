@@ -1,4 +1,4 @@
-Status: IN_PROGRESS
+Status: DONE
 Priority: P0
 
 # Protected handlers for service requests — CRUD and status transitions (Module 1)
@@ -7,7 +7,7 @@ ai-role: backend
 
 ## Promotion
 
-**Unblocked:** `module-01-add-service-requests-table-and-repository.md` is **`DONE`** (Verify on PR #12, run `23683511138`). This issue is **`READY_FOR_AI`** for execution.
+**Completed:** Handlers and governance bundle landed; **GitHub Actions Verify** on PR #12 run **`23683896247`** green (`verify:ci`, Postgres): **33** test files, **143** tests passed; migrations through `20260327_006_service_requests.sql` applied successfully.
 
 ## Objective
 
