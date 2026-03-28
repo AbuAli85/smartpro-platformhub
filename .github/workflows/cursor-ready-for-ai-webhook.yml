@@ -4,7 +4,13 @@
 #
 # Repository secrets (Settings → Secrets → Actions):
 #   CURSOR_AUTOMATION_WEBHOOK_URL — from the automation's Webhook trigger after save
-#   CURSOR_AUTOMATION_WEBHOOK_KEY — optional; sent as Authorization: Bearer <key> if set
+#   CURSOR_AUTOMATION_WEBHOOK_KEY — optional; credential value only (not the header name)
+#
+# Optional repository Variables (Settings → Secrets and variables → Actions → Variables).
+# Only if Cursor auth is not default Authorization: Bearer:
+#   CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_NAME — e.g. X-API-Key (omit for Bearer).
+#   CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_PREFIX — only with HEADER_NAME=Authorization; default Bearer.
+# Creating these names (values can be empty) silences VS Code “invalid context” hints for optional vars.
 #
 # If secrets are missing, the job skips without failing (labels/CI still work).
 
@@ -25,16 +31,37 @@ jobs:
         env:
           WEBHOOK_URL: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_URL }}
           WEBHOOK_KEY: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_KEY }}
+          # github/vscode-github-actions#222 — extension may warn until vars exist; runtime treats missing vars as empty.
+          AUTH_HEADER_NAME: ${{ vars.CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_NAME }}
+          AUTH_HEADER_PREFIX: ${{ vars.CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_PREFIX }}
         run: |
           if [ -z "${WEBHOOK_URL}" ]; then
             echo "CURSOR_AUTOMATION_WEBHOOK_URL not configured; skipping Cursor notification."
             exit 0
           fi
 
+          # Trim secrets (paste errors); strip accidental "Bearer " if the whole line was saved as the secret.
+          trim() { printf '%s' "$1" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'; }
+          WEBHOOK_URL="$(trim "${WEBHOOK_URL}")"
+          WEBHOOK_KEY="$(trim "${WEBHOOK_KEY}")"
+          if [ -n "${WEBHOOK_KEY}" ] && [[ "${WEBHOOK_KEY}" =~ ^[Bb][Ee][Aa][Rr][Ee][Rr][[:space:]]+(.+)$ ]]; then
+            WEBHOOK_KEY="$(trim "${BASH_REMATCH[1]}")"
+          fi
+
           node <<'NODE'
           const fs = require("fs");
           const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
           const issue = event.issue;
+          const maxBodyChars = 100000;
+          let body = issue.body == null ? "" : String(issue.body);
+          const bodyTruncated = body.length > maxBodyChars;
+          if (bodyTruncated) {
+            body =
+              body.slice(0, maxBodyChars) +
+              "\n\n[truncated by smartpro-platformhub webhook: issue body exceeded " +
+              maxBodyChars +
+              " characters]";
+          }
           const payload = {
             source: "github-actions",
             repository: process.env.GITHUB_REPOSITORY,
@@ -43,15 +70,42 @@ jobs:
               number: issue.number,
               title: issue.title,
               html_url: issue.html_url,
-              body: issue.body,
+              body,
+              body_truncated: bodyTruncated,
               labels: (issue.labels || []).map((l) => l.name),
             },
           };
           fs.writeFileSync("payload.json", JSON.stringify(payload));
           NODE
 
-          CURL_ARGS=(-sS -f -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" --data-binary @payload.json)
+          CURL_ARGS=(-sS -X POST "$WEBHOOK_URL" -H "Content-Type: application/json; charset=utf-8" -H "Accept: application/json" --data-binary @payload.json)
           if [ -n "${WEBHOOK_KEY}" ]; then
-            CURL_ARGS+=(-H "Authorization: Bearer ${WEBHOOK_KEY}")
+            if [ -z "${AUTH_HEADER_NAME}" ]; then
+              CURL_ARGS+=(-H "Authorization: Bearer ${WEBHOOK_KEY}")
+            elif [ "${AUTH_HEADER_NAME}" = "Authorization" ]; then
+              prefix="${AUTH_HEADER_PREFIX:-Bearer }"
+              CURL_ARGS+=(-H "Authorization: ${prefix}${WEBHOOK_KEY}")
+            else
+              CURL_ARGS+=(-H "${AUTH_HEADER_NAME}: ${WEBHOOK_KEY}")
+            fi
+          else
+            echo "::warning::CURSOR_AUTOMATION_WEBHOOK_KEY is empty. Authenticated Cursor webhooks will return 401 until you add the token from Generate auth header (value only, not the word Bearer)."
           fi
-          curl "${CURL_ARGS[@]}"
+
+          http_code="$(curl -sS -o /tmp/cursor_webhook_resp.txt -w "%{http_code}" "${CURL_ARGS[@]}")"
+          if [ "${http_code}" -ge 200 ] && [ "${http_code}" -lt 300 ]; then
+            echo "Cursor webhook accepted (HTTP ${http_code})."
+            exit 0
+          fi
+          echo "Cursor webhook failed with HTTP ${http_code}."
+          if [ "${http_code}" = "401" ]; then
+            echo "401 usually means: wrong or revoked token, token included Bearer twice, or URL is for a different automation. In GitHub, set CURSOR_AUTOMATION_WEBHOOK_KEY to the exact token after Bearer from Cursor only. Regenerate in Cursor if unsure."
+          fi
+          if [ "${http_code}" = "400" ]; then
+            echo "400 means Cursor rejected the request body or URL. Check: (1) Webhook trigger in Cursor has no required custom input fields you are not sending—remove them or add matching JSON keys to this workflow. (2) Re-copy the webhook URL after Save. (3) After pushing this workflow, re-run to read the response body printed below."
+          fi
+          if [ -s /tmp/cursor_webhook_resp.txt ]; then
+            head -c 800 /tmp/cursor_webhook_resp.txt | tr -d '\r' || true
+            echo
+          fi
+          exit 1
