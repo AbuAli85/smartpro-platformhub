@@ -48,6 +48,12 @@ A module is **complete** for factory purposes when:
 
 ### Module 1 — Booking / service request lifecycle
 
+**Execution pack**
+
+- Architecture breakdown: `docs/architecture/MODULE_01_BOOKING_SERVICE_REQUEST_LIFECYCLE.md`
+- Issue tree (order, roles, promotion): `docs/architecture/MODULE_01_ISSUE_EXECUTION_TREE.md`
+- Issue drafts: `docs/issues/module-01-*.md` (start with `Status: READY_FOR_AI` items in the tree)
+
 **Why first**
 
 - Ties together tenants, providers, statuses, timelines, and often payments and documents.

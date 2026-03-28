@@ -236,6 +236,11 @@ The **sequence and rationale** for product modules live in:
 
 - `docs/architecture/SMARTPRO_MODULE_BUILD_ROADMAP.md`
 
+**Module 1 (in progress):** execution breakdown and issue tree:
+
+- `docs/architecture/MODULE_01_BOOKING_SERVICE_REQUEST_LIFECYCLE.md`
+- `docs/architecture/MODULE_01_ISSUE_EXECUTION_TREE.md`
+
 The operating model does not duplicate that list; it defines **how** modules are built, not **which** comes first in detail.
 
 ---
