@@ -6,10 +6,9 @@
 #   CURSOR_AUTOMATION_WEBHOOK_URL — from the automation's Webhook trigger after save
 #   CURSOR_AUTOMATION_WEBHOOK_KEY — optional; credential value only (not the header name)
 #
-# Repository variables (Settings → Secrets and variables → Actions → Variables), optional:
-#   CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_NAME — must match Cursor "Generate auth header" exactly
-#     for the header name, e.g. X-API-Key or X-Cursor-Signature. If unset, default is
-#     Authorization: Bearer <key> (Cursor case "Authorization: Bearer …").
+# Optional secrets (same GitHub Settings page), only if Cursor is not Authorization: Bearer:
+#   CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_NAME — exact header name from Cursor, e.g. X-API-Key.
+#     Omit for default Authorization: Bearer <CURSOR_AUTOMATION_WEBHOOK_KEY>.
 #   CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_PREFIX — only when HEADER_NAME is Authorization;
 #     text before the key (default "Bearer "). Rarely needed.
 #
@@ -32,8 +31,8 @@ jobs:
         env:
           WEBHOOK_URL: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_URL }}
           WEBHOOK_KEY: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_KEY }}
-          AUTH_HEADER_NAME: ${{ vars.CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_NAME }}
-          AUTH_HEADER_PREFIX: ${{ vars.CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_PREFIX }}
+          AUTH_HEADER_NAME: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_NAME }}
+          AUTH_HEADER_PREFIX: ${{ secrets.CURSOR_AUTOMATION_WEBHOOK_AUTH_HEADER_PREFIX }}
         run: |
           if [ -z "${WEBHOOK_URL}" ]; then
             echo "CURSOR_AUTOMATION_WEBHOOK_URL not configured; skipping Cursor notification."
